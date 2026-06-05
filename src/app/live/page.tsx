@@ -303,18 +303,18 @@ export default function LiveHome() {
                   <button onClick={() => setBookingState("idle")} className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold py-3.5 px-4 rounded-2xl active:scale-95 transition-all flex items-center justify-center">
                     Cancel
                   </button>
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    capture="environment" 
-                    ref={qrInputRef} 
-                    onChange={handleQRScan} 
-                    className="hidden" 
-                  />
-                  <button onClick={() => qrInputRef.current?.click()} className="flex-1 bg-gradient-to-r from-yellow-400 to-amber-500 text-black font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-amber-500/20 active:scale-95 transition-all flex items-center justify-center gap-2 whitespace-nowrap">
+                  <label className="flex-1 bg-gradient-to-r from-yellow-400 to-amber-500 text-black font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-amber-500/20 active:scale-95 transition-all flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer">
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      capture="environment" 
+                      ref={qrInputRef} 
+                      onChange={handleQRScan} 
+                      className="absolute w-0 h-0 opacity-0 overflow-hidden" 
+                    />
                     <QrCode className="w-5 h-5" />
                     <span>Scan QR</span>
-                  </button>
+                  </label>
                 </div>
               </>
             )}

@@ -448,15 +448,21 @@ export default function CapturePage() {
               )}
             </button>
 
-            <button 
-              onClick={() => cameraInputRef.current?.click()}
-              disabled={isCapturing}
-              className={`relative w-20 h-20 rounded-full border-[3px] border-white flex items-center justify-center transition-all ${isCapturing ? "scale-90 opacity-50" : "active:scale-95"}`}
+            <label 
+              className={`relative w-20 h-20 rounded-full border-[3px] border-white flex items-center justify-center transition-all cursor-pointer ${isCapturing ? "scale-90 opacity-50 pointer-events-none" : "active:scale-95"}`}
             >
+              <input 
+                type="file" 
+                accept="image/*" 
+                capture="environment" 
+                ref={cameraInputRef} 
+                onChange={handleCameraCapture} 
+                className="absolute w-0 h-0 opacity-0 overflow-hidden" 
+              />
               <div className="w-[4.25rem] h-[4.25rem] bg-white rounded-full flex items-center justify-center shadow-inner">
                 <span className="sr-only">Capture</span>
               </div>
-            </button>
+            </label>
 
             <button 
               onClick={() => handleToast("Adjustments panel coming soon")}
