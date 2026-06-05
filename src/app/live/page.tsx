@@ -56,49 +56,13 @@ export default function LiveHome() {
   const [facilities, setFacilities] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
+  const qrInputRef = useRef<HTMLInputElement>(null);
 
-  // Live Camera Feed for QR Scanner
-  useEffect(() => {
-    if (bookingState === "scanning") {
-      async function startCamera() {
-        try {
-          if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
-          const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: "environment" } 
-          });
-          streamRef.current = stream;
-          if (videoRef.current) videoRef.current.srcObject = stream;
-        } catch (err: any) {
-          if (err.name === 'NotFoundError' || err.name === 'OverconstrainedError') {
-            try {
-               const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-               streamRef.current = stream;
-               if (videoRef.current) videoRef.current.srcObject = stream;
-            } catch (fallbackErr) {
-               console.error("Camera fallback failed", fallbackErr);
-            }
-          } else {
-            console.error("Camera access denied or unavailable", err);
-          }
-        }
-      }
-      startCamera();
-    } else {
-      // Stop camera if not scanning
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-        streamRef.current = null;
-      }
+  const handleQRScan = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setBookingState("scanning");
     }
-    
-    return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-      }
-    };
-  }, [bookingState]);
+  };
 
   useEffect(() => {
     async function fetchData() {
@@ -172,27 +136,20 @@ export default function LiveHome() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden"
+            className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center"
           >
-            {/* Live Camera Feed */}
-            <video 
-              ref={videoRef}
-              autoPlay 
-              playsInline 
-              muted 
-              className="absolute inset-0 w-full h-full object-cover z-0"
-            />
-
-            {/* Viewfinder with darkened backdrop */}
-            <div className="relative z-10 w-64 h-64 border-2 border-white/50 rounded-3xl overflow-hidden shadow-[0_0_0_4000px_rgba(0,0,0,0.75)]">
+            <div className="relative w-64 h-64 border-2 border-white/20 rounded-3xl overflow-hidden">
               {/* Laser Animation */}
               <motion.div 
                 animate={{ y: ["-100%", "400%", "-100%"] }}
                 transition={{ duration: 2.5, ease: "linear", repeat: Infinity }}
                 className="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-transparent to-emerald-500/50 border-b-2 border-emerald-400"
               />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <QrCode className="w-16 h-16 text-white/20" />
+              </div>
             </div>
-            <p className="relative z-10 text-white mt-8 font-bold animate-pulse drop-shadow-md">Scanning Seat {selectedSeat} QR...</p>
+            <p className="text-white mt-8 font-bold animate-pulse">Scanning Seat {selectedSeat} QR...</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -346,7 +303,15 @@ export default function LiveHome() {
                   <button onClick={() => setBookingState("idle")} className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold py-3.5 px-4 rounded-2xl active:scale-95 transition-all flex items-center justify-center">
                     Cancel
                   </button>
-                  <button onClick={() => setBookingState("scanning")} className="flex-1 bg-gradient-to-r from-yellow-400 to-amber-500 text-black font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-amber-500/20 active:scale-95 transition-all flex items-center justify-center gap-2 whitespace-nowrap">
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    capture="environment" 
+                    ref={qrInputRef} 
+                    onChange={handleQRScan} 
+                    className="hidden" 
+                  />
+                  <button onClick={() => qrInputRef.current?.click()} className="flex-1 bg-gradient-to-r from-yellow-400 to-amber-500 text-black font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-amber-500/20 active:scale-95 transition-all flex items-center justify-center gap-2 whitespace-nowrap">
                     <QrCode className="w-5 h-5" />
                     <span>Scan QR</span>
                   </button>

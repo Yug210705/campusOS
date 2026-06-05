@@ -84,29 +84,30 @@ export default function CapturePage() {
     };
   }, []);
 
-  const handleCapture = async () => {
+  const handleCameraCapture = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+    
     if (isCapturing) return;
     setIsCapturing(true);
     handleToast("Extracting notes with AI...");
 
     try {
-      let base64Image = "";
-
-      if (videoRef.current) {
-        const canvas = document.createElement("canvas");
-        canvas.width = videoRef.current.videoWidth || 1080;
-        canvas.height = videoRef.current.videoHeight || 1920;
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-          ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-          // Get the base64 string without the prefix for the API
-          const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
-          base64Image = dataUrl.split(',')[1];
-        }
-      }
+      // Read file to base64
+      const base64Image = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const result = reader.result as string;
+          // Extract just the base64 part, stripping the data URL prefix if needed by the API,
+          // though our API handles both. We'll send the raw base64.
+          resolve(result.split(',')[1]);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
 
       if (!base64Image) {
-        throw new Error("Could not capture image from camera.");
+        throw new Error("Could not process the captured image.");
       }
 
       // UX animation loop
@@ -137,15 +138,10 @@ export default function CapturePage() {
       handleToast("An error occurred while scanning.");
     } finally {
       setIsCapturing(false);
-    }
-  };
-
-  const handleCameraCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      // In a real app, we would process this uploaded file.
-      // For this demo, we'll just trigger the same API flow assuming the file was read to base64.
-      // To keep it simple, we just run the camera capture if they select a file.
-      handleCapture();
+      // Reset input so the same file can be selected again
+      if (cameraInputRef.current) {
+        cameraInputRef.current.value = '';
+      }
     }
   };
 
@@ -453,8 +449,9 @@ export default function CapturePage() {
             </button>
 
             <button 
-              onClick={handleCapture}
-              className="relative w-20 h-20 rounded-full border-[3px] border-white flex items-center justify-center active:scale-95 transition-transform"
+              onClick={() => cameraInputRef.current?.click()}
+              disabled={isCapturing}
+              className={`relative w-20 h-20 rounded-full border-[3px] border-white flex items-center justify-center transition-all ${isCapturing ? "scale-90 opacity-50" : "active:scale-95"}`}
             >
               <div className="w-[4.25rem] h-[4.25rem] bg-white rounded-full flex items-center justify-center shadow-inner">
                 <span className="sr-only">Capture</span>
