@@ -1,9 +1,12 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { MapPin, Users, Coffee, Shirt, Radio, Bell, ChevronRight, Activity, QrCode, Timer, CheckCircle2, X, Dumbbell, Loader2 } from "lucide-react";
+import { 
+  MapPin, Users, Coffee, Shirt, Radio, Bell, ChevronRight, Activity, 
+  QrCode, Timer, CheckCircle2, X, Dumbbell, Loader2, ArrowRight,
+  BookOpen, Calendar, Utensils, Megaphone, Trophy, Briefcase, Zap, Droplet
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { getCampusFacilities } from "@/actions/dbActions";
 import { useAuth } from "@/context/AuthContext";
 import { Scanner } from '@yudiel/react-qr-scanner';
 
@@ -49,33 +52,65 @@ const libraryTables = [
   }
 ];
 
+// Mock Announcements Data
+const announcements = [
+  {
+    id: 1,
+    category: "Placement",
+    title: "Google Off-Campus Drive 2026",
+    date: "June 8, 2026",
+    tagColor: "text-blue-600 bg-blue-100",
+    icon: <Briefcase className="w-6 h-6 text-blue-600" />,
+    summary: "Registration for the upcoming Google recruitment drive is now open.",
+    content: "Google is conducting an off-campus placement drive for the 2026 batch. Eligible students must have a minimum CGPA of 8.0. The first round will be an online coding assessment covering Data Structures, Algorithms, and System Design basics. Please check your college email for the registration link and syllabus details. Deadline to apply is June 10th."
+  },
+  {
+    id: 2,
+    category: "Club Activity",
+    title: "Web3 Hackathon Kickoff",
+    date: "June 6, 2026",
+    tagColor: "text-purple-600 bg-purple-100",
+    icon: <Radio className="w-6 h-6 text-purple-600" />,
+    summary: "Join us at Auditorium 2 for the 48-hour Web3 Hackathon.",
+    content: "The Campus Web3 Club is hosting a 48-hour continuous hackathon this weekend! Build innovative decentralized applications (dApps) on Solana or Ethereum. Free food, energy drinks, and exclusive swags will be provided for all participants. Top 3 teams win cash prizes up to ₹50,000. Registration is on-the-spot at Auditorium 2."
+  },
+  {
+    id: 3,
+    category: "Sports",
+    title: "Inter-Hostel Football Final",
+    date: "June 7, 2026",
+    tagColor: "text-rose-600 bg-rose-100",
+    icon: <Trophy className="w-6 h-6 text-rose-600" />,
+    summary: "Hostel A vs Hostel C in the grand finale at the Main Ground.",
+    content: "The highly anticipated football final between Hostel A and Hostel C will take place tomorrow at 5:00 PM at the Main Sports Ground. All students are encouraged to come and support their respective hostels. A live DJ and refreshments will be available post-match."
+  },
+  {
+    id: 4,
+    category: "Utility",
+    title: "Scheduled Power Outage",
+    date: "June 9, 2026",
+    tagColor: "text-amber-600 bg-amber-100",
+    icon: <Zap className="w-6 h-6 text-amber-600" />,
+    summary: "Power will be cut in the Academic Block for maintenance.",
+    content: "Due to high-tension line maintenance, there will be a scheduled power outage in the Main Academic Block and Library from 10:00 AM to 2:00 PM on June 9th. Please ensure your laptops are fully charged. WiFi will remain active via backup generators in the common areas."
+  }
+];
+
 export default function LiveHome() {
   const { user: authUser } = useAuth();
+  
+  // Library Booking State
   const [bookingState, setBookingState] = useState<BookingState>("idle");
   const [timeLeft, setTimeLeft] = useState(900); // 15 mins in seconds
   const [selectedSeat, setSelectedSeat] = useState<string | null>(null);
-  const [facilities, setFacilities] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   
+  // Modal State
+  const [activeModal, setActiveModal] = useState<"none" | "library" | "mess" | "timetable" | "announcement">("none");
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState<any>(null);
+
   const handleQRScan = () => {
     setBookingState("scanning");
   };
-
-  useEffect(() => {
-    async function fetchData() {
-      if (!authUser) return;
-      setIsLoading(true);
-      try {
-        const data = await getCampusFacilities(authUser.isAnonymous);
-        setFacilities(data);
-      } catch (error) {
-        console.error("Failed to load facilities:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchData();
-  }, []);
 
   // Handle countdown timer
   useEffect(() => {
@@ -114,7 +149,7 @@ export default function LiveHome() {
   };
 
   return (
-    <div className="relative min-h-screen bg-[#F8FAFC] overflow-hidden selection:bg-indigo-500/20">
+    <div className="relative min-h-screen bg-slate-50 overflow-x-hidden overflow-y-auto pb-32">
       
       {/* Real QR Scanner Full Screen Overlay */}
       <AnimatePresence>
@@ -150,333 +185,380 @@ export default function LiveHome() {
         )}
       </AnimatePresence>
 
-      {/* Animated Background Blobs */}
-      <div className="absolute top-0 -left-4 w-72 h-72 bg-emerald-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob" />
-      <div className="absolute top-0 -right-4 w-72 h-72 bg-teal-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000" />
-      <div className="absolute -bottom-8 left-20 w-72 h-72 bg-cyan-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000" />
-
-      <div className="relative z-10 flex flex-col px-4 pt-6 pb-32 gap-10 max-w-md mx-auto">
+      <div className="px-4 pt-8 max-w-md mx-auto flex flex-col gap-6">
         
         {/* Header */}
-        <header className="flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center text-white shadow-md shadow-emerald-200">
-              <Radio className="w-5 h-5 animate-pulse" />
-            </div>
+        <header className="mb-2">
+          <div className="flex justify-between items-start">
             <div>
-              <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-0.5 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> 14 Online Updates
+              <h1 className="text-2xl font-black tracking-tight text-slate-900 leading-none">Campus Live</h1>
+              <p className="text-xs font-bold text-emerald-600 uppercase tracking-widest mt-1.5 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Live Updates
               </p>
-              <h1 className="text-xl font-bold tracking-tight text-slate-900 leading-tight">Campus Live</h1>
             </div>
+            <button className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-600 shadow-sm hover:scale-105 transition-transform relative">
+              <Bell className="w-5 h-5" />
+              <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border border-white" />
+            </button>
           </div>
-          <button className="w-10 h-10 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-600 shadow-sm hover:scale-105 transition-transform relative">
-            <Bell className="w-5 h-5" />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-white" />
-          </button>
         </header>
 
-        {/* Hero Pulse Widget - Dynamic State Machine */}
-        <motion.section 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className={`rounded-[2rem] p-5 shadow-xl relative overflow-hidden group transition-colors duration-500 ${
-            bookingState === "confirmed" ? "bg-emerald-900" : "bg-slate-900"
-          }`}
-        >
-          {/* Dynamic Background Glow */}
-          <div className={`absolute top-0 right-0 p-32 rounded-full mix-blend-screen filter blur-3xl opacity-20 group-hover:opacity-40 transition-all duration-700 ${
-            bookingState === "reserved" || bookingState === "selecting" ? "bg-emerald-500" : 
-            bookingState === "confirmed" ? "bg-emerald-400" : "bg-emerald-500"
-          }`} />
+        {/* Main Module Cards */}
+        <section className="flex flex-col gap-4">
           
-          <div className="relative z-10">
-            {/* Status Pill */}
-            <div className="flex justify-between items-start mb-4">
-              <div className="bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-2">
-                <Activity className={`w-3.5 h-3.5 ${
-                  bookingState === "reserved" ? "text-yellow-400" : "text-emerald-400"
-                }`} />
-                <span className={`text-[10px] font-bold uppercase tracking-wider ${
-                  bookingState === "reserved" ? "text-yellow-400" : "text-emerald-400"
-                }`}>
-                  {bookingState === "confirmed" ? "Seat Booked" : 
-                   bookingState === "selecting" ? "Select a Seat" : "High Traffic"}
-                </span>
+          {/* Library Card */}
+          <motion.div
+            whileHover={{ scale: 1.01, y: -2 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setActiveModal("library")}
+            className="bg-gradient-to-br from-emerald-600 to-teal-700 text-white rounded-3xl p-6 shadow-md shadow-emerald-600/10 border border-emerald-500/25 relative overflow-hidden flex flex-col justify-between min-h-[160px] cursor-pointer group"
+          >
+            <div className="absolute -top-16 -right-16 w-40 h-40 bg-white/10 blur-2xl rounded-full" />
+            <div className="flex justify-between items-start">
+              <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center border border-white/20">
+                <BookOpen className="w-5 h-5 text-emerald-100" />
               </div>
-              
-              {bookingState !== "idle" && bookingState !== "confirmed" && (
-                <button onClick={cancelBooking} className="text-white/50 hover:text-white transition-colors">
-                  <X className="w-5 h-5" />
-                </button>
-              )}
+              <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center border border-white/20 group-hover:bg-white/20 transition-colors">
+                <ArrowRight className="w-4 h-4 text-white" />
+              </div>
             </div>
-            
-            {/* Dynamic Content */}
-            {bookingState === "idle" && (
-              <>
-                <h2 className="text-2xl font-bold text-white leading-tight mb-2">Central Library is 92% Full</h2>
-                <p className="text-sm font-medium text-slate-400 mb-6">Quiet reading hall has 4 seats left. Main floor is completely occupied.</p>
-                <div className="flex gap-3">
-                  <button onClick={startSelection} className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-emerald-500/30 active:scale-95 transition-all flex items-center justify-center gap-2">
-                    <MapPin className="w-4 h-4" /> Book Seat
-                  </button>
-                </div>
-              </>
-            )}
-
-            {bookingState === "selecting" && (
-              <>
-                <h2 className="text-lg font-bold text-white leading-tight mb-3">Quiet Reading Hall</h2>
-                
-                {/* Visual Seat Map */}
-                <div className="bg-white/5 rounded-xl p-3 mb-4 border border-white/10">
-                  <div className="grid grid-cols-2 gap-4">
-                    {libraryTables.map((table) => (
-                      <div key={table.id} className="flex flex-col items-center">
-                        <div className="text-[8px] font-bold text-white/50 mb-1 uppercase tracking-wider">Table {table.id}</div>
-                        <div className="grid grid-cols-2 gap-1.5 relative">
-                          {/* Table Center Graphic */}
-                          <div className="absolute inset-0 m-auto w-6 h-6 bg-white/10 rounded-full border border-white/5" />
-                          
-                          {table.seats.map((seat) => {
-                            const isSelected = selectedSeat === seat.id;
-                            return (
-                              <button
-                                key={seat.id}
-                                disabled={seat.isOccupied}
-                                onClick={() => setSelectedSeat(seat.id)}
-                                className={`w-7 h-7 rounded-md flex items-center justify-center text-[9px] font-bold transition-all relative z-10 ${
-                                  seat.isOccupied 
-                                    ? "bg-slate-800 text-slate-600 cursor-not-allowed" 
-                                    : isSelected
-                                      ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/50 scale-110"
-                                      : "bg-white/10 text-white/80 hover:bg-white/20 active:scale-95 border border-white/20"
-                                }`}
-                              >
-                                {seat.id.split('-')[1]}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex gap-2">
-                  <button 
-                    disabled={!selectedSeat}
-                    onClick={confirmSelection} 
-                    className={`flex-1 font-bold py-2.5 px-4 text-sm rounded-xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 ${
-                      selectedSeat 
-                        ? "bg-emerald-500 text-white shadow-emerald-500/30 hover:bg-emerald-400" 
-                        : "bg-white/10 text-white/40 cursor-not-allowed"
-                    }`}
-                  >
-                    {selectedSeat ? `Confirm ${selectedSeat}` : "Select a Seat"}
-                  </button>
-                </div>
-              </>
-            )}
-
-            {bookingState === "reserved" && (
-              <>
-                <h2 className="text-2xl font-bold text-white leading-tight mb-2">Seat {selectedSeat} Reserved!</h2>
-                <p className="text-sm font-medium text-slate-400 mb-4">Reach the library and scan the seat QR code within 15 minutes.</p>
-                
-                <div className="bg-black/40 rounded-xl p-4 flex items-center justify-between mb-4 border border-white/5">
-                  <div className="flex items-center gap-3">
-                    <Timer className="w-6 h-6 text-yellow-400" />
-                    <div>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Time Remaining</p>
-                      <p className="text-xl font-bold text-yellow-400 font-mono">{formatTime(timeLeft)}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex gap-3">
-                  <button onClick={() => setBookingState("idle")} className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold py-3.5 px-4 rounded-2xl active:scale-95 transition-all flex items-center justify-center">
-                    Cancel
-                  </button>
-                  <button 
-                    onClick={handleQRScan}
-                    className="flex-1 bg-gradient-to-r from-yellow-400 to-amber-500 text-black font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-amber-500/20 active:scale-95 transition-all flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer"
-                  >
-                    <QrCode className="w-5 h-5" />
-                    <span>Scan QR</span>
-                  </button>
-                </div>
-              </>
-            )}
-
-            {bookingState === "confirmed" && (
-              <>
-                <h2 className="text-2xl font-bold text-white leading-tight mb-2 flex items-center gap-2">
-                  <CheckCircle2 className="w-8 h-8 text-emerald-400" /> Confirmed
-                </h2>
-                <p className="text-sm font-medium text-emerald-200/70 mb-4">You are actively occupying Seat {selectedSeat} in the Quiet Reading Hall.</p>
-                
-                <div className="flex gap-3">
-                  <button onClick={cancelBooking} className="flex-1 bg-white/10 hover:bg-white/20 text-white font-bold py-3 px-4 rounded-xl active:scale-95 transition-all flex items-center justify-center gap-2 border border-white/20">
-                    Vacate Seat
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </motion.section>
-
-        {/* Facilities Grid */}
-        <div className="grid grid-cols-2 gap-4">
-          {isLoading ? (
-            <div className="col-span-2 flex justify-center py-10 opacity-50">
-              <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            <div className="mt-4">
+              <h2 className="text-xl font-bold tracking-tight">Central Library</h2>
+              <p className="text-xs font-semibold text-emerald-100 mt-1 leading-normal flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" /> 92% Full
+              </p>
             </div>
-          ) : (
-            <>
-              {/* Find the Gym */}
-              {facilities.filter(f => f.type === 'gym').map(gym => (
-                <motion.div 
-                  key={gym._id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                  className="col-span-1 bg-white p-5 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col justify-between aspect-square group relative overflow-hidden"
-                >
-                  <div className="absolute -right-4 -top-4 w-24 h-24 bg-rose-50 rounded-full mix-blend-multiply filter blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <div className="flex justify-between items-start z-10">
-                    <div className="w-10 h-10 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-500">
-                      <Dumbbell className="w-5 h-5" />
-                    </div>
-                    <div className="flex items-center gap-1 bg-rose-50 px-2 py-1 rounded-full">
-                      <Activity className="w-3 h-3 text-rose-500" />
-                      <span className="text-[10px] font-bold text-rose-600">{gym.status}</span>
-                    </div>
-                  </div>
-                  <div className="z-10">
-                    <h3 className="text-sm font-bold text-slate-800">{gym.name}</h3>
-                    <div className="flex items-baseline gap-1 mt-1">
-                      <span className="text-2xl font-black text-slate-900 leading-none">{gym.capacityPercent}%</span>
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Full</span>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
+          </motion.div>
 
-              {/* Find the Library */}
-              {facilities.filter(f => f.type === 'library').map(lib => (
-                <motion.div 
-                  key={lib._id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="col-span-1 bg-white p-5 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col justify-between aspect-square group relative overflow-hidden"
-                >
-                  <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-50 rounded-full mix-blend-multiply filter blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <div className="flex justify-between items-start z-10">
-                    <div className="w-10 h-10 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-500">
-                      <Users className="w-5 h-5" />
-                    </div>
-                    <div className="flex items-center gap-1 bg-emerald-50 px-2 py-1 rounded-full">
-                      <span className="text-[10px] font-bold text-emerald-600">{lib.status}</span>
-                    </div>
-                  </div>
-                  <div className="z-10">
-                    <h3 className="text-sm font-bold text-slate-800">{lib.name}</h3>
-                    <div className="flex items-baseline gap-1 mt-1">
-                      <span className="text-2xl font-black text-slate-900 leading-none">{lib.capacityPercent}%</span>
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Full</span>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </>
-          )}
-          
-          {/* Mess Menu dynamically generated from Facility */}
-          {facilities.filter(f => f.type === 'mess').map(mess => (
-            <motion.div 
-              key={mess._id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="col-span-2 bg-white p-5 rounded-[2rem] shadow-sm border border-slate-100 group relative overflow-hidden"
-            >
-              <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-orange-50 rounded-full mix-blend-multiply filter blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              
-              <div className="flex justify-between items-center mb-4 z-10 relative">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-orange-50 flex items-center justify-center text-orange-500">
-                    <Coffee className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-800">{mess.name}</h3>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{mess.status}</p>
-                  </div>
-                </div>
-                <button className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center hover:bg-orange-50 transition-colors">
-                  <ChevronRight className="w-4 h-4 text-slate-400" />
-                </button>
+          {/* Mess Menu Card */}
+          <motion.div
+            whileHover={{ scale: 1.01, y: -2 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setActiveModal("mess")}
+            className="bg-gradient-to-br from-amber-500 to-orange-600 text-white rounded-3xl p-6 shadow-md shadow-orange-600/10 border border-orange-500/25 relative overflow-hidden flex flex-col justify-between min-h-[140px] cursor-pointer group"
+          >
+            <div className="absolute -top-16 -right-16 w-40 h-40 bg-white/10 blur-2xl rounded-full" />
+            <div className="flex justify-between items-start">
+              <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center border border-white/20">
+                <Utensils className="w-5 h-5 text-orange-100" />
               </div>
-
-              <div className="space-y-3 z-10 relative">
-                {mess.details?.menu?.map((item: any) => (
-                  <div key={item.id} className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${item.isVeg ? 'bg-emerald-500' : 'bg-rose-500'}`} />
-                      <span className="text-sm font-medium text-slate-700">{item.name}</span>
-                    </div>
-                  </div>
-                ))}
+              <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center border border-white/20 group-hover:bg-white/20 transition-colors">
+                <ArrowRight className="w-4 h-4 text-white" />
               </div>
-            </motion.div>
-          ))}
-        </div>
+            </div>
+            <div className="mt-4">
+              <h2 className="text-xl font-bold tracking-tight">Mess Menu</h2>
+              <p className="text-xs font-semibold text-orange-100 mt-1 leading-normal">
+                Check today's breakfast, lunch, and dinner.
+              </p>
+            </div>
+          </motion.div>
 
-        {/* Happening Now Feed */}
-        <motion.section 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <div className="flex justify-between items-end mb-3 px-1">
-            <h2 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Happening Now</h2>
-            <button className="text-[11px] font-bold text-emerald-600">See Calendar</button>
+          {/* Timetable Card */}
+          <motion.div
+            whileHover={{ scale: 1.01, y: -2 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setActiveModal("timetable")}
+            className="bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-3xl p-6 shadow-md shadow-blue-600/10 border border-blue-500/25 relative overflow-hidden flex flex-col justify-between min-h-[140px] cursor-pointer group"
+          >
+            <div className="absolute -top-16 -right-16 w-40 h-40 bg-white/10 blur-2xl rounded-full" />
+            <div className="flex justify-between items-start">
+              <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center border border-white/20">
+                <Calendar className="w-5 h-5 text-blue-100" />
+              </div>
+              <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center border border-white/20 group-hover:bg-white/20 transition-colors">
+                <ArrowRight className="w-4 h-4 text-white" />
+              </div>
+            </div>
+            <div className="mt-4">
+              <h2 className="text-xl font-bold tracking-tight">Class Timetable</h2>
+              <p className="text-xs font-semibold text-blue-100 mt-1 leading-normal">
+                View your slot-wise academic schedule.
+              </p>
+            </div>
+          </motion.div>
+        </section>
+
+        {/* Announcements Feed */}
+        <section className="mt-4">
+          <div className="flex items-center gap-2 mb-4 px-1">
+            <Megaphone className="w-4 h-4 text-slate-500" />
+            <h2 className="text-[11px] font-black text-slate-500 uppercase tracking-widest">
+              Announcements
+            </h2>
           </div>
           
-          <div className="space-y-3">
-            {[
-              { id: 1, tag: "Tech Club", title: "Web3 Hackathon Kickoff", location: "Auditorium 2", time: "Starts in 10 mins", color: "text-purple-600 bg-purple-50" },
-              { id: 2, tag: "Sports", title: "Inter-Hostel Football Final", location: "Main Ground", time: "Ongoing", color: "text-rose-600 bg-rose-50" },
-              { id: 3, tag: "Academic", title: "OS Extra Lab Session", location: "Lab Complex 4", time: "In 1 hour", color: "text-blue-600 bg-blue-50" },
-            ].map((item) => (
-              <motion.div 
-                key={item.id}
-                whileHover={{ scale: 1.02, x: 4 }}
-                whileTap={{ scale: 0.98 }}
-                className="bg-white/80 backdrop-blur-lg border border-white p-4 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex items-center gap-4 cursor-pointer hover:shadow-lg transition-shadow"
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-md ${item.color}`}>
-                      {item.tag}
-                    </span>
-                    <span className="text-[10px] font-bold text-slate-400">{item.time}</span>
+          <div className="bg-white rounded-3xl p-2 border border-slate-200/80 shadow-sm flex flex-col">
+            {announcements.map((announcement, idx) => (
+              <div key={announcement.id}>
+                <div 
+                  className="flex gap-4 p-4 hover:bg-slate-50 cursor-pointer transition-colors rounded-2xl"
+                  onClick={() => {
+                    setSelectedAnnouncement(announcement);
+                    setActiveModal("announcement");
+                  }}
+                >
+                  <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
+                    {announcement.icon}
                   </div>
-                  <h4 className="text-sm font-bold text-slate-800 truncate">{item.title}</h4>
-                  <p className="text-[11px] font-medium text-slate-500 mt-0.5 flex items-center gap-1">
-                    <MapPin className="w-3 h-3" /> {item.location}
-                  </p>
+                  <div className="flex-1 min-w-0 flex flex-col justify-center">
+                    <div className="flex justify-between items-start mb-1">
+                      <span className={`text-[9px] font-bold px-2 py-0.5 rounded-md ${announcement.tagColor}`}>
+                        {announcement.category}
+                      </span>
+                      <span className="text-[10px] font-bold text-slate-400">{announcement.date}</span>
+                    </div>
+                    <h3 className="text-sm font-bold text-slate-900 leading-tight mb-1 truncate">{announcement.title}</h3>
+                    <p className="text-xs text-slate-500 line-clamp-1">{announcement.summary}</p>
+                  </div>
                 </div>
-                <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 shrink-0">
-                  <ChevronRight className="w-4 h-4" />
-                </div>
-              </motion.div>
+                {idx < announcements.length - 1 && <div className="h-px bg-slate-100 mx-4" />}
+              </div>
             ))}
           </div>
-        </motion.section>
+        </section>
       </div>
+
+      {/* Library Drawer Modal */}
+      <AnimatePresence>
+        {activeModal === "library" && (
+          <motion.div 
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className="fixed inset-x-0 bottom-0 h-[85vh] bg-slate-900 rounded-t-3xl z-50 flex flex-col shadow-[0_-10px_40px_rgba(0,0,0,0.5)] border-t border-slate-800"
+          >
+            <div className="flex justify-between items-center px-6 py-4 border-b border-slate-800 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30">
+                  <BookOpen className="w-5 h-5 text-emerald-400" />
+                </div>
+                <h3 className="text-white font-bold text-lg">Central Library</h3>
+              </div>
+              <button onClick={() => setActiveModal("none")} className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-slate-700 hover:text-white transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-6 pb-24">
+              <div className="relative z-10">
+                {/* Status Pill */}
+                <div className="flex justify-between items-start mb-4">
+                  <div className="bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-2 border border-white/10">
+                    <Activity className={`w-3.5 h-3.5 ${
+                      bookingState === "reserved" ? "text-yellow-400" : "text-emerald-400"
+                    }`} />
+                    <span className={`text-[10px] font-bold uppercase tracking-wider ${
+                      bookingState === "reserved" ? "text-yellow-400" : "text-emerald-400"
+                    }`}>
+                      {bookingState === "confirmed" ? "Seat Booked" : 
+                       bookingState === "selecting" ? "Select a Seat" : "High Traffic"}
+                    </span>
+                  </div>
+                  
+                  {bookingState !== "idle" && bookingState !== "confirmed" && (
+                    <button onClick={cancelBooking} className="text-white/50 hover:text-white transition-colors">
+                      <X className="w-5 h-5" />
+                    </button>
+                  )}
+                </div>
+                
+                {/* Dynamic Content */}
+                {bookingState === "idle" && (
+                  <>
+                    <h2 className="text-2xl font-bold text-white leading-tight mb-2">Central Library is 92% Full</h2>
+                    <p className="text-sm font-medium text-slate-400 mb-6">Quiet reading hall has 4 seats left. Main floor is completely occupied.</p>
+                    <div className="flex gap-3">
+                      <button onClick={startSelection} className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-emerald-500/30 active:scale-95 transition-all flex items-center justify-center gap-2">
+                        <MapPin className="w-4 h-4" /> Book Seat
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                {bookingState === "selecting" && (
+                  <>
+                    <h2 className="text-lg font-bold text-white leading-tight mb-3">Quiet Reading Hall</h2>
+                    
+                    {/* Visual Seat Map */}
+                    <div className="bg-white/5 rounded-xl p-4 mb-4 border border-white/10">
+                      <div className="grid grid-cols-2 gap-6">
+                        {libraryTables.map((table) => (
+                          <div key={table.id} className="flex flex-col items-center">
+                            <div className="text-[10px] font-bold text-white/50 mb-2 uppercase tracking-wider">Table {table.id}</div>
+                            <div className="grid grid-cols-2 gap-2 relative">
+                              {/* Table Center Graphic */}
+                              <div className="absolute inset-0 m-auto w-8 h-8 bg-white/10 rounded-full border border-white/5" />
+                              
+                              {table.seats.map((seat) => {
+                                const isSelected = selectedSeat === seat.id;
+                                return (
+                                  <button
+                                    key={seat.id}
+                                    disabled={seat.isOccupied}
+                                    onClick={() => setSelectedSeat(seat.id)}
+                                    className={`w-10 h-10 rounded-lg flex items-center justify-center text-xs font-bold transition-all relative z-10 ${
+                                      seat.isOccupied 
+                                        ? "bg-slate-800 text-slate-600 cursor-not-allowed" 
+                                        : isSelected
+                                          ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/50 scale-110"
+                                          : "bg-white/10 text-white/80 hover:bg-white/20 active:scale-95 border border-white/20"
+                                    }`}
+                                  >
+                                    {seat.id.split('-')[1]}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button 
+                        disabled={!selectedSeat}
+                        onClick={confirmSelection} 
+                        className={`flex-1 font-bold py-3.5 px-4 text-sm rounded-xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 ${
+                          selectedSeat 
+                            ? "bg-emerald-500 text-white shadow-emerald-500/30 hover:bg-emerald-400" 
+                            : "bg-white/10 text-white/40 cursor-not-allowed"
+                        }`}
+                      >
+                        {selectedSeat ? `Confirm ${selectedSeat}` : "Select a Seat"}
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                {bookingState === "reserved" && (
+                  <>
+                    <h2 className="text-2xl font-bold text-white leading-tight mb-2">Seat {selectedSeat} Reserved!</h2>
+                    <p className="text-sm font-medium text-slate-400 mb-4">Reach the library and scan the seat QR code within 15 minutes.</p>
+                    
+                    <div className="bg-black/40 rounded-xl p-4 flex items-center justify-between mb-4 border border-white/5">
+                      <div className="flex items-center gap-3">
+                        <Timer className="w-6 h-6 text-yellow-400" />
+                        <div>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Time Remaining</p>
+                          <p className="text-xl font-bold text-yellow-400 font-mono">{formatTime(timeLeft)}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <button onClick={() => setBookingState("idle")} className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold py-3.5 px-4 rounded-xl active:scale-95 transition-all flex items-center justify-center">
+                        Cancel
+                      </button>
+                      <button 
+                        onClick={handleQRScan}
+                        className="flex-1 bg-gradient-to-r from-yellow-400 to-amber-500 text-black font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-amber-500/20 active:scale-95 transition-all flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer"
+                      >
+                        <QrCode className="w-5 h-5" />
+                        <span>Scan QR</span>
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                {bookingState === "confirmed" && (
+                  <>
+                    <h2 className="text-2xl font-bold text-white leading-tight mb-2 flex items-center gap-2">
+                      <CheckCircle2 className="w-8 h-8 text-emerald-400" /> Confirmed
+                    </h2>
+                    <p className="text-sm font-medium text-emerald-200/70 mb-4">You are actively occupying Seat {selectedSeat} in the Quiet Reading Hall.</p>
+                    
+                    <div className="flex gap-3">
+                      <button onClick={cancelBooking} className="flex-1 bg-white/10 hover:bg-white/20 text-white font-bold py-3.5 px-4 rounded-xl active:scale-95 transition-all flex items-center justify-center gap-2 border border-white/20">
+                        Vacate Seat
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Image Viewer Modals (Mess / Timetable) */}
+      <AnimatePresence>
+        {(activeModal === "mess" || activeModal === "timetable") && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-md p-4 flex items-center justify-center"
+          >
+            <button 
+              onClick={() => setActiveModal("none")} 
+              className="absolute top-6 right-6 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 active:scale-95 transition-all z-10"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            
+            <div className="relative w-full max-w-lg aspect-[3/4] bg-slate-800 rounded-[2rem] overflow-hidden shadow-2xl border border-slate-700 flex flex-col mt-10">
+              {/* Optional: if actual image is added to public folder, replace this generic placeholder */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500 gap-4 bg-slate-800">
+                {activeModal === "mess" ? <Utensils className="w-20 h-20 opacity-20" /> : <Calendar className="w-20 h-20 opacity-20" />}
+                <p className="text-lg font-bold text-center px-8 text-slate-400">
+                  {activeModal === "mess" ? "Mess Menu" : "Class Timetable"}
+                </p>
+                <p className="text-xs font-normal opacity-60 px-12 text-center mt-2 border border-slate-700 p-4 rounded-xl">
+                  Replace with your actual image by adding it to the `/public` folder and linking an <code>&lt;img src="/image.png" /&gt;</code> here.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Announcement Details Drawer */}
+      <AnimatePresence>
+        {activeModal === "announcement" && selectedAnnouncement && (
+          <motion.div 
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className="fixed inset-x-0 bottom-0 h-[85vh] bg-white rounded-t-3xl z-50 flex flex-col shadow-[0_-20px_40px_rgba(0,0,0,0.2)]"
+          >
+            <div className="flex justify-center pt-3 pb-2 cursor-pointer" onClick={() => setActiveModal("none")}>
+              <div className="w-12 h-1.5 bg-slate-200 rounded-full" />
+            </div>
+            
+            <div className="flex-1 overflow-y-auto px-6 py-6 pb-24">
+              <div className="w-16 h-16 rounded-3xl bg-slate-50 border border-slate-100 flex items-center justify-center mb-6 shadow-sm">
+                {selectedAnnouncement.icon}
+              </div>
+              
+              <div className="mb-6">
+                <span className={`text-[10px] font-bold px-2.5 py-1 rounded-md mb-4 inline-block ${selectedAnnouncement.tagColor}`}>
+                  {selectedAnnouncement.category}
+                </span>
+                <h2 className="text-2xl font-black text-slate-900 leading-tight mb-2">{selectedAnnouncement.title}</h2>
+                <p className="text-sm font-bold text-slate-400">{selectedAnnouncement.date}</p>
+              </div>
+              
+              <div className="prose prose-slate prose-sm text-slate-600 leading-relaxed">
+                <p className="text-base font-medium text-slate-800 mb-4">{selectedAnnouncement.summary}</p>
+                <p>{selectedAnnouncement.content}</p>
+              </div>
+            </div>
+            
+            <div className="p-4 border-t border-slate-100 bg-white shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)] z-10">
+              <button 
+                onClick={() => setActiveModal("none")}
+                className="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl active:scale-95 transition-transform text-lg"
+              >
+                Close
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }
