@@ -40,7 +40,7 @@ Do not include conversational filler - output ONLY the markdown notes.`;
         "X-Title": "CampusOS Web App",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.0-flash-exp:free", // Extremely accurate and powerful vision model
+        model: "openrouter/free", // Stable auto-routing endpoint to prevent 404s
         messages: [
           {
             role: "user",
