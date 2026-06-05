@@ -206,65 +206,65 @@ export default function LiveHome() {
         {/* Main Module Cards */}
         <section className="flex flex-col gap-4">
           
-          {/* Library Card */}
+          {/* Library Card (Premium Slate) */}
           <motion.div
             whileHover={{ scale: 1.01, y: -2 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setActiveModal("library")}
-            className="bg-gradient-to-br from-emerald-600 to-teal-700 text-white rounded-3xl p-6 shadow-md shadow-emerald-600/10 border border-emerald-500/25 relative overflow-hidden flex flex-col justify-between min-h-[160px] cursor-pointer group"
+            className="bg-gradient-to-br from-slate-900 to-slate-950 text-white rounded-3xl p-6 shadow-md shadow-slate-900/10 border border-slate-800 relative overflow-hidden flex flex-col justify-between min-h-[160px] cursor-pointer group"
           >
-            <div className="absolute -top-16 -right-16 w-40 h-40 bg-white/10 blur-2xl rounded-full" />
+            <div className="absolute -top-16 -right-16 w-40 h-40 bg-emerald-500/15 blur-2xl rounded-full" />
             <div className="flex justify-between items-start">
-              <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center border border-white/20">
-                <BookOpen className="w-5 h-5 text-emerald-100" />
+              <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10">
+                <BookOpen className="w-5 h-5 text-emerald-400" />
               </div>
-              <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center border border-white/20 group-hover:bg-white/20 transition-colors">
+              <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/10 group-hover:bg-white/10 transition-colors">
                 <ArrowRight className="w-4 h-4 text-white" />
               </div>
             </div>
             <div className="mt-4">
               <h2 className="text-xl font-bold tracking-tight">Central Library</h2>
-              <p className="text-xs font-semibold text-emerald-100 mt-1 leading-normal flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" /> 92% Full
+              <p className="text-xs font-semibold text-slate-300 mt-1 leading-normal flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" /> 92% Full
               </p>
             </div>
           </motion.div>
 
-          {/* Mess Menu Card */}
+          {/* Mess Menu Card (Clean White) */}
           <motion.div
             whileHover={{ scale: 1.01, y: -2 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setActiveModal("mess")}
-            className="bg-gradient-to-br from-amber-500 to-orange-600 text-white rounded-3xl p-6 shadow-md shadow-orange-600/10 border border-orange-500/25 relative overflow-hidden flex flex-col justify-between min-h-[140px] cursor-pointer group"
+            className="bg-white text-slate-900 rounded-3xl p-6 shadow-sm shadow-slate-200/50 border border-slate-200 relative overflow-hidden flex flex-col justify-between min-h-[140px] cursor-pointer group"
           >
-            <div className="absolute -top-16 -right-16 w-40 h-40 bg-white/10 blur-2xl rounded-full" />
+            <div className="absolute -top-16 -right-16 w-40 h-40 bg-orange-500/10 blur-2xl rounded-full" />
             <div className="flex justify-between items-start">
-              <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center border border-white/20">
-                <Utensils className="w-5 h-5 text-orange-100" />
+              <div className="w-10 h-10 rounded-2xl bg-orange-50 flex items-center justify-center border border-orange-100">
+                <Utensils className="w-5 h-5 text-orange-500" />
               </div>
-              <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center border border-white/20 group-hover:bg-white/20 transition-colors">
-                <ArrowRight className="w-4 h-4 text-white" />
+              <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 group-hover:bg-slate-100 transition-colors">
+                <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600" />
               </div>
             </div>
-            <div className="mt-4">
+            <div className="mt-4 z-10 relative">
               <h2 className="text-xl font-bold tracking-tight">Mess Menu</h2>
-              <p className="text-xs font-semibold text-orange-100 mt-1 leading-normal">
+              <p className="text-xs font-semibold text-slate-500 mt-1 leading-normal">
                 Check today's breakfast, lunch, and dinner.
               </p>
             </div>
           </motion.div>
 
-          {/* Timetable Card */}
+          {/* Timetable Card (Deep Indigo) */}
           <motion.div
             whileHover={{ scale: 1.01, y: -2 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setActiveModal("timetable")}
-            className="bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-3xl p-6 shadow-md shadow-blue-600/10 border border-blue-500/25 relative overflow-hidden flex flex-col justify-between min-h-[140px] cursor-pointer group"
+            className="bg-gradient-to-br from-indigo-600 to-indigo-700 text-white rounded-3xl p-6 shadow-md shadow-indigo-600/20 border border-indigo-500/30 relative overflow-hidden flex flex-col justify-between min-h-[140px] cursor-pointer group"
           >
             <div className="absolute -top-16 -right-16 w-40 h-40 bg-white/10 blur-2xl rounded-full" />
             <div className="flex justify-between items-start">
               <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center border border-white/20">
-                <Calendar className="w-5 h-5 text-blue-100" />
+                <Calendar className="w-5 h-5 text-indigo-100" />
               </div>
               <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center border border-white/20 group-hover:bg-white/20 transition-colors">
                 <ArrowRight className="w-4 h-4 text-white" />
@@ -272,7 +272,7 @@ export default function LiveHome() {
             </div>
             <div className="mt-4">
               <h2 className="text-xl font-bold tracking-tight">Class Timetable</h2>
-              <p className="text-xs font-semibold text-blue-100 mt-1 leading-normal">
+              <p className="text-xs font-semibold text-indigo-100 mt-1 leading-normal">
                 View your slot-wise academic schedule.
               </p>
             </div>
