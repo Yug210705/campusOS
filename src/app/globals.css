@@ -155,3 +155,23 @@
     transform: translate(0px, 0px) scale(1);
   }
 }
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #notes-pdf-container, #notes-pdf-container *,
+  #saved-notes-pdf-container, #saved-notes-pdf-container * {
+    visibility: visible;
+  }
+  #notes-pdf-container, #saved-notes-pdf-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+  }
+}

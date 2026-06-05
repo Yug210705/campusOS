@@ -208,32 +208,12 @@ export default function CapturePage() {
   };
 
   const downloadPDF = async () => {
-    handleToast("Generating High Quality PDF...");
+    handleToast("Preparing PDF...");
     try {
-      const html2pdf = (await import('html2pdf.js')).default;
-      const element = document.getElementById('notes-pdf-container');
-      if (!element) throw new Error("PDF container not found");
-      
-      const opt = {
-        margin:       0.5,
-        filename:     `${activeSubject}-Notes.pdf`,
-        image:        { type: 'jpeg' as const, quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true },
-        jsPDF:        { unit: 'in' as const, format: 'letter' as const, orientation: 'portrait' as const }
-      };
-      
-      const pdfBlob = await html2pdf().set(opt).from(element).outputPdf('blob');
-      const url = URL.createObjectURL(pdfBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${activeSubject}-Notes.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      window.print();
     } catch (e) {
       console.error(e);
-      handleToast("Failed to generate PDF");
+      handleToast("Failed to open PDF dialog");
     }
   };
 
@@ -520,20 +500,30 @@ export default function CapturePage() {
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
             className="absolute inset-x-0 bottom-0 h-[85vh] bg-white rounded-t-3xl z-50 flex flex-col shadow-[0_-10px_40px_rgba(0,0,0,0.5)]"
           >
-            <div className="flex justify-center pt-3 pb-2">
+            <div 
+              className="flex justify-center pt-3 pb-2 bg-white cursor-pointer"
+              onClick={() => {
+                setShowNotesDrawer(false);
+                setAccumulatedNotes("");
+              }}
+            >
               <div className="w-12 h-1.5 bg-slate-200 rounded-full" />
             </div>
             
-            <div className="px-6 pb-4 border-b border-slate-100 flex justify-between items-center">
+            <div className="px-6 pb-4 bg-white border-b border-slate-100 flex justify-between items-center relative z-50">
               <div>
                 <h3 className="text-sm font-black text-slate-800">{activeSubject} Notes</h3>
                 <p className="text-[10px] font-bold text-slate-400 tracking-wide uppercase">AI Extracted Workspace</p>
               </div>
               <button 
-                onClick={() => handleToast("Notes exported successfully")}
-                className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowNotesDrawer(false);
+                  setAccumulatedNotes("");
+                }}
+                className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 cursor-pointer pointer-events-auto"
               >
-                <Upload className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 

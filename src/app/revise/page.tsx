@@ -28,30 +28,11 @@ export default function RevisePage() {
 
   const downloadPDF = async (note: any) => {
     try {
-      const html2pdf = (await import('html2pdf.js')).default;
-      const element = document.getElementById('saved-notes-pdf-container');
-      if (!element) throw new Error("PDF container not found");
-      
-      const opt = {
-        margin:       0.5,
-        filename:     `${note.subject}-SavedNotes.pdf`,
-        image:        { type: 'jpeg' as const, quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true },
-        jsPDF:        { unit: 'in' as const, format: 'letter' as const, orientation: 'portrait' as const }
-      };
-      
-      const pdfBlob = await html2pdf().set(opt).from(element).outputPdf('blob');
-      const url = URL.createObjectURL(pdfBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${note.subject}-SavedNotes.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      // Use native browser print/PDF generation which is bulletproof on mobile
+      window.print();
     } catch (e) {
       console.error(e);
-      alert("Failed to generate PDF");
+      alert("Failed to open PDF dialog");
     }
   };
 
@@ -234,17 +215,30 @@ export default function RevisePage() {
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
             className="fixed inset-0 bg-white z-[100] flex flex-col"
           >
-            <div className="flex justify-between items-center px-4 py-3 bg-white border-b border-slate-100">
+            <div 
+              className="flex justify-center pt-3 pb-2 bg-white cursor-pointer"
+              onClick={() => setSelectedNote(null)}
+            >
+              <div className="w-12 h-1.5 bg-slate-200 rounded-full" />
+            </div>
+            
+            <div className="flex justify-between items-center px-4 py-3 bg-white border-b border-slate-100 relative z-50">
               <button 
-                onClick={() => setSelectedNote(null)}
-                className="w-10 h-10 flex items-center justify-center text-slate-500 bg-slate-50 rounded-full"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedNote(null);
+                }}
+                className="w-10 h-10 flex items-center justify-center text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-full cursor-pointer pointer-events-auto"
               >
                 <X className="w-6 h-6" />
               </button>
               <h2 className="font-bold text-slate-800 truncate flex-1 text-center mx-4">{selectedNote.subject} Notes</h2>
               <button 
-                onClick={() => deleteNote(selectedNote.id)}
-                className="w-10 h-10 flex items-center justify-center text-red-500 bg-red-50 rounded-full"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deleteNote(selectedNote.id);
+                }}
+                className="w-10 h-10 flex items-center justify-center text-red-500 bg-red-50 hover:bg-red-100 rounded-full cursor-pointer pointer-events-auto"
               >
                 <Trash2 className="w-5 h-5" />
               </button>
