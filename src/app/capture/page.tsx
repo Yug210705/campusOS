@@ -154,6 +154,9 @@ export default function CapturePage() {
     try {
       const html2pdf = (await import('html2pdf.js')).default;
       const element = document.getElementById('notes-pdf-container');
+      if (!element) {
+        throw new Error("PDF container not found");
+      }
       const opt = {
         margin:       0.5,
         filename:     `${activeSubject}-Notes.pdf`,
