@@ -1,6 +1,6 @@
 "use client";
 
-import { Flame, Target, Zap, Brain, Camera, BookOpen, Sparkles, MoreHorizontal, User, Settings, LogOut } from "lucide-react";
+import { Flame, Target, Zap, Brain, Camera, BookOpen, Sparkles, MoreHorizontal, User, Settings, LogOut, Folder } from "lucide-react";
 import StatCard from "@/components/home/StatCard";
 import QuickAction from "@/components/home/QuickAction";
 import Heatmap from "@/components/home/Heatmap";
@@ -16,6 +16,20 @@ export default function LearnHome() {
   const { user: authUser, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [noteFolders, setNoteFolders] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    try {
+      const notes = JSON.parse(localStorage.getItem('campusOS_saved_notes') || '[]');
+      const folders = notes.reduce((acc: any, note: any) => {
+        acc[note.subject] = (acc[note.subject] || 0) + 1;
+        return acc;
+      }, {});
+      setNoteFolders(folders);
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
 
   useEffect(() => {
     async function fetchData() {
@@ -167,6 +181,33 @@ export default function LearnHome() {
           <QuickAction title="Ask AI Tutor" icon={Sparkles} href="/ai" />
         </div>
       </section>
+
+      {/* Notes Folders */}
+      {Object.keys(noteFolders).length > 0 && (
+        <section>
+          <div className="flex justify-between items-end mb-3 px-1 mt-8">
+            <h2 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">My Notes</h2>
+            <Link href="/revise" className="text-[11px] font-bold text-indigo-600">View Vault</Link>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {Object.entries(noteFolders).map(([subject, count]) => (
+              <Link 
+                key={subject} 
+                href="/revise"
+                className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-3 hover:border-indigo-300 hover:shadow-md transition-all active:scale-95 group"
+              >
+                <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                  <Folder className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-800 line-clamp-1">{subject}</h3>
+                  <p className="text-xs font-medium text-slate-400 mt-0.5">{count} {count === 1 ? 'Note' : 'Notes'}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Recent Lectures */}
       <section>

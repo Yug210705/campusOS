@@ -168,22 +168,6 @@ export default function CapturePage() {
         setAccumulatedNotes(data.notes);
         setShowNotesDrawer(true);
         setCapturedImages([]); // Clear gallery after successful generation
-        
-        // Save to LocalStorage
-        try {
-          const existing = JSON.parse(localStorage.getItem('campusOS_saved_notes') || '[]');
-          existing.push({
-            id: Date.now().toString(),
-            subject: activeSubject,
-            content: data.notes,
-            date: new Date().toISOString()
-          });
-          localStorage.setItem('campusOS_saved_notes', JSON.stringify(existing));
-          setTimeout(() => handleToast("Notes successfully saved to Revise Hub!"), 1000);
-        } catch (e) {
-          console.error("Failed to save to local storage", e);
-        }
-        
       } else {
         handleToast(data.error || "Failed to analyze image batch.");
       }
@@ -199,6 +183,27 @@ export default function CapturePage() {
     setCapturedImages(prev => prev.filter((_, i) => i !== index));
     if (capturedImages.length === 1) {
       setShowGallery(false);
+    }
+  };
+
+  const handleSaveToNotes = () => {
+    try {
+      const existing = JSON.parse(localStorage.getItem('campusOS_saved_notes') || '[]');
+      existing.push({
+        id: Date.now().toString(),
+        subject: activeSubject,
+        content: accumulatedNotes,
+        date: new Date().toISOString()
+      });
+      localStorage.setItem('campusOS_saved_notes', JSON.stringify(existing));
+      handleToast("Added to Notes successfully!");
+      setTimeout(() => {
+        setShowNotesDrawer(false);
+        setAccumulatedNotes("");
+      }, 500);
+    } catch (e) {
+      console.error("Failed to save to local storage", e);
+      handleToast("Failed to save notes.");
     }
   };
 
@@ -550,22 +555,30 @@ export default function CapturePage() {
               </div>
             </div>
 
-            <div className="p-4 border-t border-slate-100 bg-white flex gap-3 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)] z-10 relative">
+            <div className="p-4 border-t border-slate-100 bg-white flex flex-col gap-3 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)] z-10 relative pb-safe">
               <button 
-                onClick={downloadPDF}
-                className="flex-1 bg-white border border-slate-200 text-slate-700 font-bold py-3.5 rounded-xl active:scale-95 transition-transform flex items-center justify-center gap-2 hover:bg-slate-50"
+                onClick={handleSaveToNotes}
+                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold py-4 rounded-2xl active:scale-95 transition-transform flex items-center justify-center gap-2 text-lg shadow-lg shadow-indigo-200"
               >
-                <Download className="w-5 h-5" /> Download PDF
+                <Save className="w-6 h-6" /> Add to Notes
               </button>
-              <button 
-                onClick={() => {
-                  setShowNotesDrawer(false);
-                  setAccumulatedNotes("");
-                }}
-                className="flex-1 bg-black text-white font-bold py-3.5 rounded-xl active:scale-95 transition-transform flex items-center justify-center gap-2"
-              >
-                <Camera className="w-5 h-5" /> Keep Capturing
-              </button>
+              <div className="flex gap-3">
+                <button 
+                  onClick={downloadPDF}
+                  className="flex-1 bg-white border border-slate-200 text-slate-700 font-bold py-3.5 rounded-xl active:scale-95 transition-transform flex items-center justify-center gap-2 hover:bg-slate-50"
+                >
+                  <Download className="w-5 h-5" /> Download PDF
+                </button>
+                <button 
+                  onClick={() => {
+                    setShowNotesDrawer(false);
+                    setAccumulatedNotes("");
+                  }}
+                  className="flex-1 bg-slate-100 text-slate-700 font-bold py-3.5 rounded-xl active:scale-95 transition-transform flex items-center justify-center gap-2 hover:bg-slate-200"
+                >
+                  <X className="w-5 h-5" /> Discard
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
