@@ -102,12 +102,25 @@ export default function CapturePage() {
 
       if (videoRef.current) {
         const canvas = document.createElement("canvas");
-        canvas.width = videoRef.current.videoWidth || 1080;
-        canvas.height = videoRef.current.videoHeight || 1920;
+        let width = videoRef.current.videoWidth || 1080;
+        let height = videoRef.current.videoHeight || 1920;
+        
+        // Downscale to 1200px max to drastically speed up upload and AI processing
+        const MAX_SIZE = 1200;
+        if (width > height && width > MAX_SIZE) {
+          height = Math.round(height * (MAX_SIZE / width));
+          width = MAX_SIZE;
+        } else if (height > MAX_SIZE) {
+          width = Math.round(width * (MAX_SIZE / height));
+          height = MAX_SIZE;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
         const ctx = canvas.getContext("2d");
         if (ctx) {
-          ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-          rawDataUrl = canvas.toDataURL("image/jpeg", 0.8);
+          ctx.drawImage(videoRef.current, 0, 0, width, height);
+          rawDataUrl = canvas.toDataURL("image/jpeg", 0.6); // Highly optimized payload
           base64Image = rawDataUrl.split(',')[1];
         }
       }
