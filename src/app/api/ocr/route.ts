@@ -35,7 +35,7 @@ Do not include conversational filler like "Here are the notes" - output ONLY the
         "X-Title": "CampusOS Web App",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.0-flash-exp:free", // Free vision model
+        model: "openrouter/free", // Automatically selects a free vision-capable model
         messages: [
           {
             role: "user",
