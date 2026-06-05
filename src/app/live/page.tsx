@@ -5,6 +5,7 @@ import { MapPin, Users, Coffee, Shirt, Radio, Bell, ChevronRight, Activity, QrCo
 import { motion, AnimatePresence } from "framer-motion";
 import { getCampusFacilities } from "@/actions/dbActions";
 import { useAuth } from "@/context/AuthContext";
+import { Scanner } from '@yudiel/react-qr-scanner';
 
 type BookingState = "idle" | "selecting" | "reserved" | "scanning" | "confirmed";
 
@@ -56,12 +57,8 @@ export default function LiveHome() {
   const [facilities, setFacilities] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
-  const qrInputRef = useRef<HTMLInputElement>(null);
-
-  const handleQRScan = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setBookingState("scanning");
-    }
+  const handleQRScan = () => {
+    setBookingState("scanning");
   };
 
   useEffect(() => {
@@ -94,16 +91,6 @@ export default function LiveHome() {
     return () => clearInterval(interval);
   }, [bookingState, timeLeft]);
 
-  // Simulate QR Scanning
-  useEffect(() => {
-    if (bookingState === "scanning") {
-      const timer = setTimeout(() => {
-        setBookingState("confirmed");
-      }, 2500); // Fake 2.5s scan delay
-      return () => clearTimeout(timer);
-    }
-  }, [bookingState]);
-
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
@@ -129,27 +116,38 @@ export default function LiveHome() {
   return (
     <div className="relative min-h-screen bg-[#F8FAFC] overflow-hidden selection:bg-indigo-500/20">
       
-      {/* Fake QR Scanner Full Screen Overlay */}
+      {/* Real QR Scanner Full Screen Overlay */}
       <AnimatePresence>
         {bookingState === "scanning" && (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center"
+            className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center"
           >
-            <div className="relative w-64 h-64 border-2 border-white/20 rounded-3xl overflow-hidden">
-              {/* Laser Animation */}
-              <motion.div 
-                animate={{ y: ["-100%", "400%", "-100%"] }}
-                transition={{ duration: 2.5, ease: "linear", repeat: Infinity }}
-                className="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-transparent to-emerald-500/50 border-b-2 border-emerald-400"
-              />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <QrCode className="w-16 h-16 text-white/20" />
-              </div>
+            <div className="absolute top-12 right-6 z-10">
+              <button onClick={() => setBookingState("reserved")} className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex flex-col items-center justify-center text-white active:scale-95 transition-transform">
+                <X className="w-6 h-6" />
+              </button>
             </div>
-            <p className="text-white mt-8 font-bold animate-pulse">Scanning Seat {selectedSeat} QR...</p>
+            
+            <div className="relative w-[80%] max-w-sm aspect-square border-2 border-emerald-500/50 rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(16,185,129,0.2)] bg-slate-900 mx-4">
+              <Scanner
+                onScan={(result) => {
+                  if (result && result.length > 0) {
+                    setBookingState("confirmed");
+                  }
+                }}
+                components={{
+                  audio: false,
+                  torch: false,
+                  countDown: false,
+                  finder: false,
+                }}
+              />
+              <div className="absolute inset-0 pointer-events-none border-4 border-emerald-400 rounded-3xl opacity-50" />
+            </div>
+            <p className="text-white mt-8 font-bold animate-pulse tracking-wide text-lg">Point at Seat {selectedSeat} QR Code</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -303,18 +301,13 @@ export default function LiveHome() {
                   <button onClick={() => setBookingState("idle")} className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold py-3.5 px-4 rounded-2xl active:scale-95 transition-all flex items-center justify-center">
                     Cancel
                   </button>
-                  <label className="flex-1 bg-gradient-to-r from-yellow-400 to-amber-500 text-black font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-amber-500/20 active:scale-95 transition-all flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer">
-                    <input 
-                      type="file" 
-                      accept="image/*" 
-                      capture="environment" 
-                      ref={qrInputRef} 
-                      onChange={handleQRScan} 
-                      className="absolute w-0 h-0 opacity-0 overflow-hidden" 
-                    />
+                  <button 
+                    onClick={handleQRScan}
+                    className="flex-1 bg-gradient-to-r from-yellow-400 to-amber-500 text-black font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-amber-500/20 active:scale-95 transition-all flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer"
+                  >
                     <QrCode className="w-5 h-5" />
                     <span>Scan QR</span>
-                  </label>
+                  </button>
                 </div>
               </>
             )}
