@@ -59,7 +59,7 @@ export default function LearnHome() {
   }, [authUser]);
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 pt-8 pb-36 max-w-md mx-auto flex flex-col gap-8">
+    <div className="min-h-screen bg-slate-50 px-4 pt-5 pb-36 max-w-md mx-auto flex flex-col gap-8">
       
       {/* Header */}
       <header className="flex justify-between items-center">
