@@ -498,16 +498,13 @@ export default function LiveHome() {
               <X className="w-6 h-6" />
             </button>
             
-            <div className="relative w-full max-w-lg aspect-[3/4] bg-slate-800 rounded-[2rem] overflow-hidden shadow-2xl border border-slate-700 flex flex-col mt-10">
-              {/* Optional: if actual image is added to public folder, replace this generic placeholder */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500 gap-4 bg-slate-800">
-                {activeModal === "mess" ? <Utensils className="w-20 h-20 opacity-20" /> : <Calendar className="w-20 h-20 opacity-20" />}
-                <p className="text-lg font-bold text-center px-8 text-slate-400">
-                  {activeModal === "mess" ? "Mess Menu" : "Class Timetable"}
-                </p>
-                <p className="text-xs font-normal opacity-60 px-12 text-center mt-2 border border-slate-700 p-4 rounded-xl">
-                  Replace with your actual image by adding it to the `/public` folder and linking an <code>&lt;img src="/image.png" /&gt;</code> here.
-                </p>
+            <div className="relative w-full max-w-lg h-[60vh] sm:h-[80vh] bg-slate-900 rounded-[2rem] overflow-hidden shadow-2xl border border-slate-700 flex flex-col mt-10">
+              <div className="absolute inset-0 overflow-auto flex items-center justify-center p-2">
+                {activeModal === "mess" ? (
+                  <img src="/mess.png" alt="Mess Menu" className="w-full h-auto object-contain rounded-xl" />
+                ) : (
+                  <img src="/tt.png" alt="Class Timetable" className="w-full h-auto object-contain rounded-xl" />
+                )}
               </div>
             </div>
           </motion.div>
