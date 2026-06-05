@@ -40,7 +40,7 @@ Do not include conversational filler - output ONLY the markdown notes.`;
         "X-Title": "CampusOS Web App",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.0-pro-exp-02-05:free", // Guaranteed vision model to prevent random text-only routing failures
+        model: "nvidia/nemotron-nano-12b-v2-vl:free", // Guaranteed vision model to prevent random text-only routing failures
         messages: [
           {
             role: "user",
