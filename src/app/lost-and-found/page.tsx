@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Plus, MapPin, Clock, AlertCircle, Phone, X, Camera, UploadCloud, Loader2 } from "lucide-react";
+import { Search, Plus, MapPin, Clock, AlertCircle, Phone, X, Camera, UploadCloud, Loader2, Image as ImageIcon } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useUser } from "@/context/UserContext";
