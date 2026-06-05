@@ -3,6 +3,7 @@ import connectToDatabase from '@/lib/mongodb';
 import User from '@/models/User';
 import LostFoundItem from '@/models/LostFoundItem';
 import Facility from '@/models/Facility';
+import ExchangeItem from '@/models/ExchangeItem';
 
 export async function GET() {
   try {
@@ -12,6 +13,7 @@ export async function GET() {
     await User.deleteMany({});
     await LostFoundItem.deleteMany({});
     await Facility.deleteMany({});
+    await ExchangeItem.deleteMany({});
 
     // Seed User
     await User.create({
@@ -72,6 +74,51 @@ export async function GET() {
         image: "/artifacts/airpods_found_1780654879538.png",
         status: "found",
         reporter: "Security Desk",
+      }
+    ]);
+
+    // Seed Exchange Items
+    await ExchangeItem.insertMany([
+      {
+        title: "Scientific Calculator (Casio)",
+        description: "Casio fx-991EX ClassWiz in perfect condition. Used for 1 semester only.",
+        price: 600,
+        category: "Academic",
+        location: "Block B, Room 402",
+        contactNumber: "9876543210",
+        image: "https://images.unsplash.com/photo-1627856013091-fed6e4e30025?q=80&w=600&auto=format&fit=crop",
+        sellerName: "Aarav Sharma",
+      },
+      {
+        title: "Lab Coat (Medium)",
+        description: "White cotton lab coat, size M. No stains, freshly washed.",
+        price: 150,
+        category: "Academic",
+        location: "Block A, Room 102",
+        contactNumber: "9876543211",
+        image: "https://images.unsplash.com/photo-1576086213369-97a306d36557?q=80&w=600&auto=format&fit=crop",
+        sellerName: "Yug Pathak",
+      },
+      {
+        title: "Hero Cycle (21-Speed)",
+        description: "Mountain bike, dual disc brakes, front suspension. Perfect for campus commuting.",
+        price: 3500,
+        category: "Cycles",
+        location: "Cycle Stand B",
+        contactNumber: "9876543212",
+        image: "https://images.unsplash.com/photo-1485965120184-e220f721d03e?q=80&w=600&auto=format&fit=crop",
+        sellerName: "Rohan Sen",
+      },
+      {
+        title: "Electric Kettle (Pigeon 1.5L)",
+        description: "Heats water in under 2 minutes. Automatic cut-off. Working perfectly.",
+        price: 400,
+        category: "Hostel Essentials",
+        location: "Block C, Room 304",
+        contactNumber: "9876543213",
+        image: "/artifacts/kettle.png",
+        sellerName: "Meera Nair",
+        isAvailable: true
       }
     ]);
 
