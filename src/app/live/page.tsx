@@ -139,9 +139,7 @@ export default function LiveHome() {
                   }
                 }}
                 components={{
-                  audio: false,
                   torch: false,
-                  countDown: false,
                   finder: false,
                 }}
               />
