@@ -132,7 +132,6 @@ export default function LearnHome() {
         <StatCard 
           title="Revision Streak" 
           value={user?.learningStats?.revisionStreak || "0 Days"} 
-          subtitle={user?.learningStats?.streakSubtitle || "Just getting started"}
           variant="hero"
           icon={Flame}
         />
