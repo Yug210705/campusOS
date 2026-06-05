@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import BottomNav from "@/components/layout/BottomNav";
+import { UserProvider } from "@/context/UserContext";
+import { AuthProvider } from "@/context/AuthContext";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -22,8 +24,6 @@ export const viewport: Viewport = {
   userScalable: false,
 };
 
-import { UserProvider } from "@/context/UserContext";
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -32,10 +32,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} font-sans antialiased`}>
       <body className="min-h-[100dvh] flex flex-col bg-slate-50 text-slate-900 overflow-x-hidden selection:bg-primary/20">
-        <UserProvider>
-          <main className="flex-1 pb-24 relative">{children}</main>
-          <BottomNav />
-        </UserProvider>
+        <AuthProvider>
+          <UserProvider>
+            <main className="flex-1 pb-24 relative">{children}</main>
+            <BottomNav />
+          </UserProvider>
+        </AuthProvider>
       </body>
     </html>
   );

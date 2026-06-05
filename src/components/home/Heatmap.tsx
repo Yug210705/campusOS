@@ -2,6 +2,10 @@
 
 import { useMemo } from "react";
 
+interface HeatmapProps {
+  streak?: number;
+}
+
 const getLevelColor = (level: number) => {
   switch (level) {
     case 1: return "bg-emerald-200";
@@ -12,35 +16,43 @@ const getLevelColor = (level: number) => {
   }
 };
 
-export default function Heatmap() {
+export default function Heatmap({ streak = 12 }: HeatmapProps) {
   const weeks = 15; // Number of columns
   const daysPerWeek = 7;
+  const totalBoxes = weeks * daysPerWeek;
 
-  // Generate random heatmap data for demonstration
   const data = useMemo(() => {
     const grid = [];
+    let boxIndex = 0;
+    const startGreenIndex = totalBoxes - streak;
+
     for (let col = 0; col < weeks; col++) {
       const week = [];
       for (let row = 0; row < daysPerWeek; row++) {
-        // Skew randomness towards 0 and 1 for realistic look
-        const rand = Math.random();
-        let level = 0;
-        if (rand > 0.9) level = 4;
-        else if (rand > 0.75) level = 3;
-        else if (rand > 0.5) level = 2;
-        else if (rand > 0.3) level = 1;
-        week.push(level);
+        if (boxIndex >= startGreenIndex) {
+          // Part of the streak, color it green
+          const rand = Math.random();
+          let level = 1;
+          if (rand > 0.8) level = 4;
+          else if (rand > 0.5) level = 3;
+          else if (rand > 0.2) level = 2;
+          week.push(level);
+        } else {
+          // Not part of the streak, make it gray
+          week.push(0);
+        }
+        boxIndex++;
       }
       grid.push(week);
     }
     return grid;
-  }, []);
+  }, [streak]);
 
   return (
     <div className="w-full bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col">
       <div className="flex justify-between items-end mb-3">
         <div>
-          <h2 className="text-sm font-bold text-slate-800">142 Submissions</h2>
+          <h2 className="text-sm font-bold text-slate-800">{streak} Submissions</h2>
           <p className="text-[10px] font-medium text-slate-500">in the past year</p>
         </div>
         <div className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
@@ -73,7 +85,7 @@ export default function Heatmap() {
       
       <p className="text-[10px] font-bold text-emerald-600 mt-3 flex items-center gap-1">
         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-        Current Streak: 12 Days
+        Current Streak: {streak} Days
       </p>
     </div>
   );

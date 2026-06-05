@@ -15,15 +15,45 @@ import {
   CreditCard,
   Sparkles,
   Camera,
-  X
+  X,
+  Loader2
 } from "lucide-react";
 import { useUser } from "@/context/UserContext";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
+import { getUserProfile } from "@/actions/dbActions";
+import { useAuth } from "@/context/AuthContext";
 
 export default function ProfilePage() {
   const { profileImage, setProfileImage } = useUser();
+  const { user: authUser, logout } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showVirtualId, setShowVirtualId] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      if (!authUser) return;
+      setIsLoading(true);
+      try {
+        const data = await getUserProfile(authUser.uid, authUser.isAnonymous);
+        if (!data) {
+          setUser({
+            name: "Profile Missing", rollNumber: "N/A", major: "N/A", classYear: "N/A",
+            cgpa: "N/A", totalCredits: 0, maxCredits: 160,
+            accommodation: { hostel: "Profile Missing", dietaryPreference: "Profile Missing" }
+          });
+        } else {
+          setUser(data);
+        }
+      } catch (error) {
+        console.error("Failed to load profile:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchData();
+  }, []);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -58,12 +88,17 @@ export default function ProfilePage() {
         </header>
 
         {/* Premium Digital ID Card (Hero) */}
-        <motion.section 
-          initial={{ opacity: 0, scale: 0.95, y: 10 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.5, type: "spring", bounce: 0.4 }}
-          className="relative rounded-[2rem] p-5 shadow-[0_15px_30px_rgb(0,0,0,0.15)] overflow-hidden bg-slate-950 border border-white/10 group"
-        >
+        {isLoading ? (
+          <div className="h-64 rounded-[2rem] bg-slate-200 animate-pulse flex items-center justify-center border border-white/10 shadow-[0_15px_30px_rgb(0,0,0,0.15)]">
+            <Loader2 className="w-8 h-8 text-indigo-400 animate-spin" />
+          </div>
+        ) : user ? (
+          <motion.section 
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.5, type: "spring", bounce: 0.4 }}
+            className="relative rounded-[2rem] p-5 shadow-[0_15px_30px_rgb(0,0,0,0.15)] overflow-hidden bg-slate-950 border border-white/10 group"
+          >
           {/* Stunning Glassmorphic Glows inside the Card */}
           <div className="absolute -top-32 -right-32 w-64 h-64 bg-indigo-500 rounded-full mix-blend-screen filter blur-[50px] opacity-60 group-hover:opacity-80 transition-opacity duration-700" />
           <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-purple-500 rounded-full mix-blend-screen filter blur-[50px] opacity-40 group-hover:opacity-60 transition-opacity duration-700" />
@@ -114,13 +149,13 @@ export default function ProfilePage() {
             {/* Middle Row: Identity */}
             <div>
               <div className="flex items-center gap-1.5 mb-1">
-                <h2 className="text-xl font-bold text-white leading-none tracking-tight">Yug Pathak</h2>
+                <h2 className="text-xl font-bold text-white leading-none tracking-tight">{user.name}</h2>
                 <Sparkles className="w-4 h-4 text-yellow-400" />
               </div>
-              <p className="text-[11px] font-medium text-indigo-200/80 tracking-wide">B.Tech Computer Science</p>
+              <p className="text-[11px] font-medium text-indigo-200/80 tracking-wide">{user.major}</p>
               <div className="mt-2.5 inline-flex items-center gap-1 px-2 py-0.5 rounded bg-white/10 border border-white/5 backdrop-blur-md">
                 <GraduationCap className="w-3 h-3 text-indigo-300" />
-                <span className="text-[8px] font-bold text-indigo-200 uppercase tracking-widest">Class of '27</span>
+                <span className="text-[8px] font-bold text-indigo-200 uppercase tracking-widest">{user.classYear}</span>
               </div>
             </div>
 
@@ -129,50 +164,59 @@ export default function ProfilePage() {
               <div>
                 <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Current CGPA</p>
                 <div className="flex items-baseline gap-1">
-                  <p className="text-xl font-bold text-white leading-none">9.24</p>
+                  <p className="text-xl font-bold text-white leading-none">{user.cgpa}</p>
                 </div>
               </div>
               <div className="w-px h-6 bg-white/10" />
               <div>
                 <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Credits</p>
                 <div className="flex items-baseline gap-1">
-                  <p className="text-xl font-bold text-white leading-none">124</p>
-                  <p className="text-[10px] font-bold text-slate-500">/160</p>
+                  <p className="text-xl font-bold text-white leading-none">{user.totalCredits}</p>
+                  <p className="text-[10px] font-bold text-slate-500">/{user.maxCredits}</p>
                 </div>
               </div>
             </div>
           </div>
         </motion.section>
+        ) : null}
 
         {/* Sleek Quick Actions (Vertical Stack Style) */}
         <motion.section 
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="flex gap-3"
+          transition={{ delay: 0.1, duration: 0.4 }}
+          className="flex flex-col gap-2"
         >
           <button 
             onClick={() => setShowVirtualId(true)}
-            className="flex-1 bg-white py-3.5 px-2 rounded-[1.25rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col items-center justify-center gap-2.5 active:scale-95 transition-all hover:shadow-md group"
+            className="w-full bg-white rounded-2xl p-4 flex justify-between items-center shadow-sm border border-slate-100 hover:border-indigo-100 group transition-all"
           >
-            <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-              <CreditCard className="w-4 h-4" />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-500 group-hover:scale-110 transition-transform">
+                <CreditCard className="w-4 h-4" />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-bold text-slate-800">Virtual ID Card</p>
+                <p className="text-[10px] font-medium text-slate-400">Tap to show QR for scanning</p>
+              </div>
             </div>
-            <span className="text-[10px] font-bold text-slate-700 whitespace-nowrap">Virtual ID</span>
+            <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-indigo-400 transition-colors" />
           </button>
           
-          <button className="flex-1 bg-white py-3.5 px-2 rounded-[1.25rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col items-center justify-center gap-2.5 active:scale-95 transition-all hover:shadow-md group">
-            <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-600 group-hover:bg-slate-800 group-hover:text-white transition-colors">
-              <Settings className="w-4 h-4" />
+          <button 
+            onClick={logout}
+            className="w-full bg-white rounded-2xl p-4 flex justify-between items-center shadow-sm border border-slate-100 hover:border-rose-100 group transition-all"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center text-rose-500 group-hover:scale-110 transition-transform">
+                <LogOut className="w-4 h-4" />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-bold text-slate-800">Sign Out</p>
+                <p className="text-[10px] font-medium text-slate-400">Securely end session</p>
+              </div>
             </div>
-            <span className="text-[10px] font-bold text-slate-700 whitespace-nowrap">Settings</span>
-          </button>
-
-          <button className="flex-1 bg-white py-3.5 px-2 rounded-[1.25rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col items-center justify-center gap-2.5 active:scale-95 transition-all hover:shadow-md group">
-            <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-600 group-hover:bg-slate-800 group-hover:text-white transition-colors">
-              <ShieldCheck className="w-4 h-4" />
-            </div>
-            <span className="text-[10px] font-bold text-slate-700 whitespace-nowrap">Privacy</span>
+            <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-rose-400 transition-colors" />
           </button>
         </motion.section>
 
@@ -184,14 +228,10 @@ export default function ProfilePage() {
           className="flex flex-col gap-4"
         >
           {/* Accommodation & Dining */}
-          <div className="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-orange-50 rounded-full mix-blend-multiply filter blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 translate-x-1/2 -translate-y-1/2" />
-            
-            <div className="flex items-center justify-between mb-4 relative z-10">
-              <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Accommodation & Dining</h3>
-              <button className="text-[9px] font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-0.5">
-                Edit <ChevronRight className="w-2.5 h-2.5" />
-              </button>
+          <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 mt-6 relative overflow-hidden">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Accommodation & Dining</h2>
+              {!authUser?.isAnonymous && <button className="text-xs font-bold text-indigo-600 hover:text-indigo-700 transition-colors flex items-center gap-1">Edit <ChevronRight className="w-3 h-3" /></button>}
             </div>
             
             <div className="flex flex-col gap-3 relative z-10">
@@ -201,7 +241,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="flex-1">
                   <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Hostel & Room</p>
-                  <p className="text-sm font-bold text-slate-800">Block B, Room 402</p>
+                  <p className="text-sm font-bold text-slate-800">{user?.accommodation?.hostel || "Loading..."}</p>
                 </div>
               </div>
               
@@ -213,21 +253,17 @@ export default function ProfilePage() {
                 </div>
                 <div className="flex-1">
                   <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Dietary Preference</p>
-                  <p className="text-sm font-bold text-slate-800">Pure Vegetarian</p>
+                  <p className="text-sm font-bold text-slate-800">{user?.accommodation?.dietaryPreference || "Loading..."}</p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Academic Profile */}
-          <div className="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-full mix-blend-multiply filter blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 translate-x-1/2 -translate-y-1/2" />
-            
-            <div className="flex items-center justify-between mb-4 relative z-10">
-              <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Academic Profile</h3>
-              <button className="text-[9px] font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-0.5">
-                Edit <ChevronRight className="w-2.5 h-2.5" />
-              </button>
+          <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 mt-6">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Academic Profile</h2>
+              {!authUser?.isAnonymous && <button className="text-xs font-bold text-indigo-600 hover:text-indigo-700 transition-colors flex items-center gap-1">Edit <ChevronRight className="w-3 h-3" /></button>}
             </div>
             
             <div className="flex flex-col gap-3 relative z-10">
@@ -237,7 +273,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="flex-1">
                   <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Roll Number</p>
-                  <p className="text-sm font-bold text-slate-800 font-mono tracking-tight">2023CS0142</p>
+                  <p className="text-sm font-bold text-slate-800 font-mono tracking-tight">{user?.rollNumber || "Loading..."}</p>
                 </div>
               </div>
               
@@ -249,7 +285,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="flex-1">
                   <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Current Semester</p>
-                  <p className="text-sm font-bold text-slate-800">6th Semester</p>
+                  <p className="text-sm font-bold text-slate-800">{user?.currentSemester || "Loading..."}</p>
                 </div>
               </div>
             </div>
@@ -271,7 +307,7 @@ export default function ProfilePage() {
                 <div className="flex-1">
                   <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Wi-Fi Devices</p>
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-bold text-slate-800">2 <span className="text-slate-400 font-medium">/ 3 Registered</span></p>
+                    <p className="text-sm font-bold text-slate-800">{user?.wifiDevicesRegistered || 0} <span className="text-slate-400 font-medium">/ {user?.wifiDevicesMax || 0} Registered</span></p>
                     <div className="w-6 h-6 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-cyan-50 transition-colors">
                       <ChevronRight className="w-3 h-3 text-slate-400 group-hover:text-cyan-600 transition-colors" />
                     </div>
@@ -320,10 +356,10 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <h2 className="text-xl font-bold text-white tracking-tight z-10">Yug Pathak</h2>
-                <p className="text-xs font-medium text-indigo-200/80 tracking-wide mt-0.5 z-10">B.Tech Computer Science</p>
+                <h2 className="text-xl font-bold text-white tracking-tight z-10">{user?.name}</h2>
+                <p className="text-xs font-medium text-indigo-200/80 tracking-wide mt-0.5 z-10">{user?.major}</p>
                 <div className="mt-2.5 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-white/10 border border-white/5 backdrop-blur-md z-10">
-                  <span className="text-[9px] font-bold text-indigo-200 uppercase tracking-widest">ID: 2023CS0142</span>
+                  <span className="text-[9px] font-bold text-indigo-200 uppercase tracking-widest">ID: {user?.rollNumber}</span>
                 </div>
               </div>
 

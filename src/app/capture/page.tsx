@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Camera, X, Sparkles, CheckCircle2, Zap, ZapOff, Settings2, Image as ImageIcon, ChevronDown, Save, FileText, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -34,6 +34,71 @@ export default function CapturePage() {
   const [captureMode, setCaptureMode] = useState<"auto" | "manual">("auto");
   const [flashMode, setFlashMode] = useState<"on" | "off" | "auto">("auto");
   const [showToast, setShowToast] = useState<string | null>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Live Camera Feed
+  useEffect(() => {
+    let stream: MediaStream | null = null;
+    
+    async function startCamera() {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        handleToast("Camera API not supported on this browser.");
+        return;
+      }
+
+      try {
+        // Try to get the rear camera first
+        stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { facingMode: "environment" } 
+        });
+      } catch (err: any) {
+        // If rear camera is missing, fallback to any available camera (e.g. desktop webcam)
+        if (err.name === 'NotFoundError' || err.name === 'OverconstrainedError') {
+          try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          } catch (fallbackErr) {
+            console.error("No camera found at all", fallbackErr);
+            handleToast("No camera detected on this device.");
+            return;
+          }
+        } else {
+          console.error("Camera access denied or unavailable", err);
+          handleToast("Camera access required for live feed.");
+          return;
+        }
+      }
+
+      if (stream && videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    }
+    
+    startCamera();
+    
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
+
+  const handleCameraCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      if (!isCapturing) {
+        setIsCapturing(true);
+        handleToast("Scanning whiteboard...");
+      }
+    }
+  };
+
+  // If they click the shutter button directly, we just simulate capturing from the live feed
+  const handleShutterClick = () => {
+    if (!isCapturing) {
+      setIsCapturing(true);
+      handleToast("Scanning whiteboard...");
+    }
+  };
 
   // Simulated OCR append logic
   useEffect(() => {
@@ -72,6 +137,15 @@ export default function CapturePage() {
   return (
     <div className="fixed inset-0 bg-black z-[100] flex flex-col font-sans overflow-hidden">
       
+      {/* Live Camera Feed Background */}
+      <video 
+        ref={videoRef}
+        autoPlay 
+        playsInline 
+        muted 
+        className="absolute inset-0 w-full h-full object-cover z-0 opacity-70"
+      />
+
       {/* Toast Notification */}
       <AnimatePresence>
         {showToast && (

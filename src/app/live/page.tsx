@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { MapPin, Users, Coffee, Shirt, Radio, Bell, ChevronRight, Activity, QrCode, Timer, CheckCircle2, X } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { MapPin, Users, Coffee, Shirt, Radio, Bell, ChevronRight, Activity, QrCode, Timer, CheckCircle2, X, Dumbbell, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { getCampusFacilities } from "@/actions/dbActions";
+import { useAuth } from "@/context/AuthContext";
 
 type BookingState = "idle" | "selecting" | "reserved" | "scanning" | "confirmed";
 
@@ -47,9 +49,72 @@ const libraryTables = [
 ];
 
 export default function LiveHome() {
+  const { user: authUser } = useAuth();
   const [bookingState, setBookingState] = useState<BookingState>("idle");
   const [timeLeft, setTimeLeft] = useState(900); // 15 mins in seconds
   const [selectedSeat, setSelectedSeat] = useState<string | null>(null);
+  const [facilities, setFacilities] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  // Live Camera Feed for QR Scanner
+  useEffect(() => {
+    if (bookingState === "scanning") {
+      async function startCamera() {
+        try {
+          if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+          const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: "environment" } 
+          });
+          streamRef.current = stream;
+          if (videoRef.current) videoRef.current.srcObject = stream;
+        } catch (err: any) {
+          if (err.name === 'NotFoundError' || err.name === 'OverconstrainedError') {
+            try {
+               const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+               streamRef.current = stream;
+               if (videoRef.current) videoRef.current.srcObject = stream;
+            } catch (fallbackErr) {
+               console.error("Camera fallback failed", fallbackErr);
+            }
+          } else {
+            console.error("Camera access denied or unavailable", err);
+          }
+        }
+      }
+      startCamera();
+    } else {
+      // Stop camera if not scanning
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
+      }
+    }
+    
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [bookingState]);
+
+  useEffect(() => {
+    async function fetchData() {
+      if (!authUser) return;
+      setIsLoading(true);
+      try {
+        const data = await getCampusFacilities(authUser.isAnonymous);
+        setFacilities(data);
+      } catch (error) {
+        console.error("Failed to load facilities:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchData();
+  }, []);
 
   // Handle countdown timer
   useEffect(() => {
@@ -107,20 +172,27 @@ export default function LiveHome() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center"
+            className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden"
           >
-            <div className="relative w-64 h-64 border-2 border-white/20 rounded-3xl overflow-hidden">
+            {/* Live Camera Feed */}
+            <video 
+              ref={videoRef}
+              autoPlay 
+              playsInline 
+              muted 
+              className="absolute inset-0 w-full h-full object-cover z-0"
+            />
+
+            {/* Viewfinder with darkened backdrop */}
+            <div className="relative z-10 w-64 h-64 border-2 border-white/50 rounded-3xl overflow-hidden shadow-[0_0_0_4000px_rgba(0,0,0,0.75)]">
               {/* Laser Animation */}
               <motion.div 
                 animate={{ y: ["-100%", "400%", "-100%"] }}
                 transition={{ duration: 2.5, ease: "linear", repeat: Infinity }}
                 className="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-transparent to-emerald-500/50 border-b-2 border-emerald-400"
               />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <QrCode className="w-16 h-16 text-white/20" />
-              </div>
             </div>
-            <p className="text-white mt-8 font-bold animate-pulse">Scanning Seat {selectedSeat} QR...</p>
+            <p className="relative z-10 text-white mt-8 font-bold animate-pulse drop-shadow-md">Scanning Seat {selectedSeat} QR...</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -271,8 +343,12 @@ export default function LiveHome() {
                 </div>
 
                 <div className="flex gap-3">
-                  <button onClick={() => setBookingState("scanning")} className="flex-1 bg-yellow-500 text-black font-bold py-3 px-4 rounded-xl shadow-lg shadow-yellow-500/20 active:scale-95 transition-all flex items-center justify-center gap-2">
-                    <QrCode className="w-5 h-5" /> Scan QR to Confirm
+                  <button onClick={() => setBookingState("idle")} className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold py-3.5 px-4 rounded-2xl active:scale-95 transition-all flex items-center justify-center">
+                    Cancel
+                  </button>
+                  <button onClick={() => setBookingState("scanning")} className="flex-1 bg-gradient-to-r from-yellow-400 to-amber-500 text-black font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-amber-500/20 active:scale-95 transition-all flex items-center justify-center gap-2 whitespace-nowrap">
+                    <QrCode className="w-5 h-5" />
+                    <span>Scan QR</span>
                   </button>
                 </div>
               </>
@@ -296,44 +372,111 @@ export default function LiveHome() {
         </motion.section>
 
         {/* Facilities Grid */}
-        <motion.section 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="grid grid-cols-2 gap-4"
-        >
-          {/* Mess Card */}
-          <div className="bg-white border border-slate-200 p-3 rounded-2xl shadow-sm flex flex-col gap-2 active:scale-95 transition-transform cursor-pointer">
-            <div className="flex justify-between items-start">
-              <div className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-orange-500">
-                <Coffee className="w-4 h-4" />
-              </div>
-              <span className="text-[10px] font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full whitespace-nowrap">
-                Open
-              </span>
+        <div className="grid grid-cols-2 gap-4">
+          {isLoading ? (
+            <div className="col-span-2 flex justify-center py-10 opacity-50">
+              <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
             </div>
-            <div>
-              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Dinner Menu</p>
-              <h3 className="text-sm font-bold text-slate-800 leading-tight">Paneer Tikka & Naan</h3>
-            </div>
-          </div>
+          ) : (
+            <>
+              {/* Find the Gym */}
+              {facilities.filter(f => f.type === 'gym').map(gym => (
+                <motion.div 
+                  key={gym._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="col-span-1 bg-white p-5 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col justify-between aspect-square group relative overflow-hidden"
+                >
+                  <div className="absolute -right-4 -top-4 w-24 h-24 bg-rose-50 rounded-full mix-blend-multiply filter blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="flex justify-between items-start z-10">
+                    <div className="w-10 h-10 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-500">
+                      <Dumbbell className="w-5 h-5" />
+                    </div>
+                    <div className="flex items-center gap-1 bg-rose-50 px-2 py-1 rounded-full">
+                      <Activity className="w-3 h-3 text-rose-500" />
+                      <span className="text-[10px] font-bold text-rose-600">{gym.status}</span>
+                    </div>
+                  </div>
+                  <div className="z-10">
+                    <h3 className="text-sm font-bold text-slate-800">{gym.name}</h3>
+                    <div className="flex items-baseline gap-1 mt-1">
+                      <span className="text-2xl font-black text-slate-900 leading-none">{gym.capacityPercent}%</span>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Full</span>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
 
-          {/* Laundry Card */}
-          <div className="bg-white border border-slate-200 p-3 rounded-2xl shadow-sm flex flex-col gap-2 active:scale-95 transition-transform cursor-pointer">
-            <div className="flex justify-between items-start">
-              <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-500">
-                <Shirt className="w-4 h-4" />
+              {/* Find the Library */}
+              {facilities.filter(f => f.type === 'library').map(lib => (
+                <motion.div 
+                  key={lib._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="col-span-1 bg-white p-5 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col justify-between aspect-square group relative overflow-hidden"
+                >
+                  <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-50 rounded-full mix-blend-multiply filter blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="flex justify-between items-start z-10">
+                    <div className="w-10 h-10 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-500">
+                      <Users className="w-5 h-5" />
+                    </div>
+                    <div className="flex items-center gap-1 bg-emerald-50 px-2 py-1 rounded-full">
+                      <span className="text-[10px] font-bold text-emerald-600">{lib.status}</span>
+                    </div>
+                  </div>
+                  <div className="z-10">
+                    <h3 className="text-sm font-bold text-slate-800">{lib.name}</h3>
+                    <div className="flex items-baseline gap-1 mt-1">
+                      <span className="text-2xl font-black text-slate-900 leading-none">{lib.capacityPercent}%</span>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Full</span>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </>
+          )}
+          
+          {/* Mess Menu dynamically generated from Facility */}
+          {facilities.filter(f => f.type === 'mess').map(mess => (
+            <motion.div 
+              key={mess._id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="col-span-2 bg-white p-5 rounded-[2rem] shadow-sm border border-slate-100 group relative overflow-hidden"
+            >
+              <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-orange-50 rounded-full mix-blend-multiply filter blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              
+              <div className="flex justify-between items-center mb-4 z-10 relative">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-orange-50 flex items-center justify-center text-orange-500">
+                    <Coffee className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-800">{mess.name}</h3>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{mess.status}</p>
+                  </div>
+                </div>
+                <button className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center hover:bg-orange-50 transition-colors">
+                  <ChevronRight className="w-4 h-4 text-slate-400" />
+                </button>
               </div>
-              <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full whitespace-nowrap">
-                3 Free
-              </span>
-            </div>
-            <div>
-              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Hostel B Laundry</p>
-              <h3 className="text-sm font-bold text-slate-800 leading-tight">Machines Available</h3>
-            </div>
-          </div>
-        </motion.section>
+
+              <div className="space-y-3 z-10 relative">
+                {mess.details?.menu?.map((item: any) => (
+                  <div key={item.id} className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${item.isVeg ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                      <span className="text-sm font-medium text-slate-700">{item.name}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          ))}
+        </div>
 
         {/* Happening Now Feed */}
         <motion.section 

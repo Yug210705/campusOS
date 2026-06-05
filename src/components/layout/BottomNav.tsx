@@ -15,6 +15,8 @@ const navItems = [
 export default function BottomNav() {
   const pathname = usePathname();
 
+  if (pathname === '/login') return null;
+
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 pb-6 pt-2 px-2 z-50">
       <div className="flex justify-between items-center max-w-md mx-auto">

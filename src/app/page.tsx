@@ -5,13 +5,44 @@ import StatCard from "@/components/home/StatCard";
 import QuickAction from "@/components/home/QuickAction";
 import Heatmap from "@/components/home/Heatmap";
 import { useUser } from "@/context/UserContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { getUserProfile } from "@/actions/dbActions";
+import { useAuth } from "@/context/AuthContext";
 
 export default function LearnHome() {
   const { profileImage } = useUser();
+  const { user: authUser, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    async function fetchData() {
+      if (!authUser) return;
+      try {
+        const data = await getUserProfile(authUser.uid, authUser.isAnonymous);
+        if (!data) {
+          // If profile is missing in DB, provide a fallback to prevent infinite loading
+          setUser({
+            name: "Profile Missing",
+            learningStats: {
+              revisionStreak: "N/A", streakSubtitle: "Please sign out",
+              placementPercent: "N/A", placementTrack: "Profile missing",
+              confidenceAvg: "N/A", confidenceSubtitle: "Please sign out",
+              conceptsMastered: "N/A", conceptsSubtitle: "Profile missing",
+              studyTime: "N/A", studyTimeSubtitle: "Please sign out"
+            }
+          });
+        } else {
+          setUser(data);
+        }
+      } catch (error) {
+        console.error("Failed to load user:", error);
+      }
+    }
+    fetchData();
+  }, [authUser]);
 
   return (
     <div className="min-h-screen bg-slate-50 px-4 pt-8 pb-28 max-w-md mx-auto flex flex-col gap-8">
@@ -28,7 +59,9 @@ export default function LearnHome() {
           </div>
           <div>
             <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest mb-0.5">Good Morning</p>
-            <h1 className="text-xl font-bold tracking-tight text-slate-900 leading-tight">Yug Pathak</h1>
+            <h1 className="text-xl font-bold tracking-tight text-slate-900 leading-tight">
+              {user ? user.name.split(' ')[0] : "Loading..."}
+            </h1>
           </div>
         </div>
         <div className="relative">
@@ -66,7 +99,10 @@ export default function LearnHome() {
                     Settings
                   </button>
                   <div className="h-px w-full bg-slate-100 my-1" />
-                  <button className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-rose-600 hover:bg-rose-50 transition-colors">
+                  <button 
+                    onClick={logout}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-rose-600 hover:bg-rose-50 transition-colors"
+                  >
                     <LogOut className="w-4 h-4" />
                     Sign Out
                   </button>
@@ -81,19 +117,43 @@ export default function LearnHome() {
       <section>
         <StatCard 
           title="Revision Streak" 
-          value="12 Days" 
-          subtitle="Top 5% of class"
-          icon={Flame} 
+          value={user?.learningStats?.revisionStreak || "0 Days"} 
+          subtitle={user?.learningStats?.streakSubtitle || "Just getting started"}
           variant="hero"
+          icon={Flame}
         />
       </section>
 
       {/* Grid Metrics */}
-      <section className="grid grid-cols-2 gap-3">
-        <StatCard title="Placement" value="68%" subtitle="Software Eng." icon={Target} />
-        <StatCard title="Confidence" value="8.4" subtitle="Avg across 5 subjects" icon={Zap} />
-        <StatCard title="Concepts" value="142" subtitle="Mastered this week" icon={Brain} />
-        <StatCard title="Study Time" value="14h" subtitle="Past 7 days" icon={BookOpen} />
+      <section className="grid grid-cols-2 gap-4">
+        <StatCard 
+          title="PLACEMENT" 
+          value={user?.learningStats?.placementPercent || "0%"} 
+          subtitle={user?.learningStats?.placementTrack || "Not Set"}
+          variant="dense"
+          icon={Target}
+        />
+        <StatCard 
+          title="CONFIDENCE" 
+          value={user?.learningStats?.confidenceAvg || "0%"} 
+          subtitle={user?.learningStats?.confidenceSubtitle || "Keep practicing"}
+          variant="dense"
+          icon={Zap}
+        />
+        <StatCard 
+          title="CONCEPTS" 
+          value={user?.learningStats?.conceptsMastered || "0"} 
+          subtitle={user?.learningStats?.conceptsSubtitle || "Start studying"}
+          variant="dense"
+          icon={Brain}
+        />
+        <StatCard 
+          title="STUDY TIME" 
+          value={user?.learningStats?.studyTime || "0h"} 
+          subtitle={user?.learningStats?.studyTimeSubtitle || "No time logged"}
+          variant="dense"
+          icon={BookOpen}
+        />
       </section>
 
       {/* Actions */}
@@ -146,7 +206,7 @@ export default function LearnHome() {
         <div className="flex justify-between items-end mb-3 px-1">
           <h2 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Consistency</h2>
         </div>
-        <Heatmap />
+        <Heatmap streak={parseInt((user?.learningStats?.revisionStreak || "0").match(/\d+/)?.[0] || "0", 10)} />
       </section>
 
     </div>
