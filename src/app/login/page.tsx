@@ -118,16 +118,7 @@ export default function LoginPage() {
         
         {/* Header Section */}
         <div className="mb-6 text-center">
-          <motion.div 
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="w-12 h-12 bg-white rounded-xl shadow-sm border border-slate-100 mx-auto flex items-center justify-center mb-3"
-          >
-            <div className="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600">
-              <Sparkles className="w-4 h-4" />
-            </div>
-          </motion.div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight mb-1">CampusOS</h1>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-1">CampusOS</h1>
           <p className="text-xs text-slate-500 font-medium">Your entire campus, in your pocket.</p>
         </div>
 
