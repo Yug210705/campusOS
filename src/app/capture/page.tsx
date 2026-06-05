@@ -203,7 +203,16 @@ export default function CapturePage() {
         html2canvas:  { scale: 2, useCORS: true },
         jsPDF:        { unit: 'in' as const, format: 'letter' as const, orientation: 'portrait' as const }
       };
-      html2pdf().set(opt).from(element).save();
+      
+      const pdfBlob = await html2pdf().set(opt).from(element).outputPdf('blob');
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${activeSubject}-Notes.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     } catch (e) {
       console.error(e);
       handleToast("Failed to generate PDF");

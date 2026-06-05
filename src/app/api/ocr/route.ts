@@ -13,15 +13,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "OpenRouter API Key is missing. Please add it to .env.local" }, { status: 500 });
     }
 
-    const prompt = `You are an expert academic assistant and OCR AI. 
-Please scan the provided image(s) of a whiteboard, notebook, or study material.
-1. Extract ALL text, formulas, diagrams descriptions, and characters with 100% accuracy.
-2. If there are multiple images, synthesize and merge the information logically into a single comprehensive document.
-3. Format the extracted information into highly professional, detailed study notes using Markdown.
-4. Use appropriate headings (H1, H2, H3), bullet points, bold text for key terms, and code blocks for any code or structured data.
-5. If there are lists or steps, format them cleanly.
-6. Your output should look like an immaculate A4 study sheet.
-Do not include conversational filler like "Here are the notes" - output ONLY the markdown notes.`;
+    const prompt = `You are an expert OCR AI. 
+Your ONLY job is to extract exactly what is written in the provided images.
+1. Extract EVERY single character, word, sentence, formula, and diagram description EXACTLY as they appear.
+2. DO NOT hallucinate. DO NOT summarize. DO NOT add any external knowledge or context.
+3. If there are multiple images, combine the exact text sequentially.
+4. Format the exact text cleanly using Markdown (H1, H2, bullet points, code blocks) so it looks professional, but keep the data 100% identical to the images.
+Do not include conversational filler - output ONLY the markdown notes.`;
 
     const contentBlocks: any[] = [{ type: "text", text: prompt }];
 
@@ -42,14 +40,14 @@ Do not include conversational filler like "Here are the notes" - output ONLY the
         "X-Title": "CampusOS Web App",
       },
       body: JSON.stringify({
-        model: "openrouter/free", // Automatically selects a free vision-capable model
+        model: "google/gemini-2.0-flash-exp:free", // Extremely accurate and powerful vision model
         messages: [
           {
             role: "user",
             content: contentBlocks
           }
         ],
-        temperature: 0.1 // Low temperature for factual extraction
+        temperature: 0.0 // 0.0 temperature for absolute factual extraction without variation
       })
     });
 
