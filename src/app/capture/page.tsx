@@ -146,10 +146,12 @@ export default function CapturePage() {
     setShowGallery(false);
     handleToast("AI Processing Batch...");
 
+    let interval: NodeJS.Timeout | undefined;
+
     try {
       // UX animation loop
       setCurrentStep(0);
-      const interval = setInterval(() => {
+      interval = setInterval(() => {
         setCurrentStep((prev) => (prev < steps.length - 1 ? prev + 1 : prev));
       }, 1500);
 
@@ -175,6 +177,7 @@ export default function CapturePage() {
       console.error("OCR Generation Error:", error);
       handleToast("An error occurred while generating notes.");
     } finally {
+      if (interval) clearInterval(interval);
       setIsGenerating(false);
     }
   };
