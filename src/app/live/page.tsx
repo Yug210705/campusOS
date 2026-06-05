@@ -211,21 +211,21 @@ export default function LiveHome() {
             whileHover={{ scale: 1.01, y: -2 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setActiveModal("library")}
-            className="bg-gradient-to-br from-emerald-100 to-teal-200/70 text-slate-900 rounded-3xl p-6 shadow-sm shadow-emerald-200/50 border border-emerald-300/60 relative overflow-hidden flex flex-col justify-between min-h-[140px] cursor-pointer group"
+            className="bg-gradient-to-br from-slate-900 to-slate-950 text-white rounded-3xl p-6 shadow-md shadow-slate-950/15 border border-slate-800 relative overflow-hidden flex flex-col justify-between min-h-[140px] cursor-pointer group"
           >
-            <div className="absolute -top-16 -right-16 w-40 h-40 bg-emerald-500/15 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="absolute -top-16 -right-16 w-40 h-40 bg-emerald-500/15 blur-2xl rounded-full" />
             <div className="flex justify-between items-start z-10 relative">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-400/30">
-                <BookOpen className="w-5 h-5 text-emerald-700" />
+              <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center border border-white/20">
+                <BookOpen className="w-5 h-5 text-emerald-400" />
               </div>
-              <div className="w-8 h-8 rounded-full bg-white/60 flex items-center justify-center border border-emerald-200 group-hover:bg-white transition-colors shadow-sm">
-                <ArrowRight className="w-4 h-4 text-emerald-700" />
+              <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center border border-white/20 group-hover:bg-white/20 transition-colors">
+                <ArrowRight className="w-4 h-4 text-white" />
               </div>
             </div>
             <div className="mt-4 z-10 relative">
-              <h2 className="text-xl font-bold tracking-tight text-emerald-950">Central Library</h2>
-              <p className="text-xs font-semibold text-emerald-800/80 mt-1 leading-normal flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse shadow-[0_0_8px_rgba(5,150,105,0.5)]" /> 92% Full
+              <h2 className="text-xl font-bold tracking-tight">Central Library</h2>
+              <p className="text-xs font-semibold text-slate-300 mt-1 leading-normal flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" /> 92% Full
               </p>
             </div>
           </motion.div>
@@ -235,20 +235,20 @@ export default function LiveHome() {
             whileHover={{ scale: 1.01, y: -2 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setActiveModal("mess")}
-            className="bg-gradient-to-br from-orange-100 to-amber-200/70 text-slate-900 rounded-3xl p-6 shadow-sm shadow-orange-200/50 border border-orange-300/60 relative overflow-hidden flex flex-col justify-between min-h-[140px] cursor-pointer group"
+            className="bg-gradient-to-br from-slate-900 to-slate-950 text-white rounded-3xl p-6 shadow-md shadow-slate-950/15 border border-slate-800 relative overflow-hidden flex flex-col justify-between min-h-[140px] cursor-pointer group"
           >
-            <div className="absolute -top-16 -right-16 w-40 h-40 bg-orange-500/15 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="absolute -top-16 -right-16 w-40 h-40 bg-orange-500/15 blur-2xl rounded-full" />
             <div className="flex justify-between items-start z-10 relative">
-              <div className="w-10 h-10 rounded-2xl bg-orange-500/10 flex items-center justify-center border border-orange-400/30">
-                <Utensils className="w-5 h-5 text-orange-700" />
+              <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center border border-white/20">
+                <Utensils className="w-5 h-5 text-orange-400" />
               </div>
-              <div className="w-8 h-8 rounded-full bg-white/60 flex items-center justify-center border border-orange-200 group-hover:bg-white transition-colors shadow-sm">
-                <ArrowRight className="w-4 h-4 text-orange-700" />
+              <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center border border-white/20 group-hover:bg-white/20 transition-colors">
+                <ArrowRight className="w-4 h-4 text-white" />
               </div>
             </div>
             <div className="mt-4 z-10 relative">
-              <h2 className="text-xl font-bold tracking-tight text-orange-950">Mess Menu</h2>
-              <p className="text-xs font-semibold text-orange-800/80 mt-1 leading-normal">
+              <h2 className="text-xl font-bold tracking-tight">Mess Menu</h2>
+              <p className="text-xs font-semibold text-slate-300 mt-1 leading-normal">
                 Check today's breakfast, lunch, and dinner.
               </p>
             </div>
@@ -259,20 +259,20 @@ export default function LiveHome() {
             whileHover={{ scale: 1.01, y: -2 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setActiveModal("timetable")}
-            className="bg-gradient-to-br from-blue-100 to-indigo-200/70 text-slate-900 rounded-3xl p-6 shadow-sm shadow-blue-200/50 border border-blue-300/60 relative overflow-hidden flex flex-col justify-between min-h-[140px] cursor-pointer group"
+            className="bg-gradient-to-br from-indigo-600 to-indigo-700 text-white rounded-3xl p-6 shadow-md shadow-indigo-600/10 border border-indigo-500/25 relative overflow-hidden flex flex-col justify-between min-h-[140px] cursor-pointer group"
           >
-            <div className="absolute -top-16 -right-16 w-40 h-40 bg-blue-500/15 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="absolute -top-16 -right-16 w-40 h-40 bg-white/10 blur-2xl rounded-full" />
             <div className="flex justify-between items-start z-10 relative">
-              <div className="w-10 h-10 rounded-2xl bg-blue-500/10 flex items-center justify-center border border-blue-400/30">
-                <Calendar className="w-5 h-5 text-blue-700" />
+              <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center border border-white/20">
+                <Calendar className="w-5 h-5 text-indigo-100" />
               </div>
-              <div className="w-8 h-8 rounded-full bg-white/60 flex items-center justify-center border border-blue-200 group-hover:bg-white transition-colors shadow-sm">
-                <ArrowRight className="w-4 h-4 text-blue-700" />
+              <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center border border-white/20 group-hover:bg-white/20 transition-colors">
+                <ArrowRight className="w-4 h-4 text-white" />
               </div>
             </div>
             <div className="mt-4 z-10 relative">
-              <h2 className="text-xl font-bold tracking-tight text-blue-950">Class Timetable</h2>
-              <p className="text-xs font-semibold text-blue-800/80 mt-1 leading-normal">
+              <h2 className="text-xl font-bold tracking-tight">Class Timetable</h2>
+              <p className="text-xs font-semibold text-indigo-100 mt-1 leading-normal">
                 View your slot-wise academic schedule.
               </p>
             </div>
