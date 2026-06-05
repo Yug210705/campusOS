@@ -209,39 +209,6 @@ export default function LearnHome() {
         </section>
       )}
 
-      {/* Recent Lectures */}
-      <section>
-        <div className="flex justify-between items-end mb-3 px-1">
-          <h2 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Recent Activity</h2>
-          <button className="text-[11px] font-bold text-indigo-600">View All</button>
-        </div>
-        
-        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-          {[
-            { id: 1, code: "OS", title: "CPU Scheduling", slug: "cpu-scheduling", time: "10:30 AM", status: "Mastered", color: "text-emerald-600 bg-emerald-50" },
-            { id: 2, code: "DB", title: "Normalization", slug: "normalization", time: "Yesterday", status: "Review", color: "text-orange-600 bg-orange-50" },
-          ].map((item, idx, arr) => (
-            <Link 
-              key={item.id}
-              href={`/notes/${item.slug}`}
-              className={`flex items-center gap-3 p-3 hover:bg-slate-50 transition-colors ${
-                idx !== arr.length - 1 ? 'border-b border-slate-100' : ''
-              }`}
-            >
-              <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-600 shrink-0">
-                {item.code}
-              </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="text-sm font-bold text-slate-800 truncate">{item.title}</h4>
-                <p className="text-[10px] font-medium text-slate-400 mt-0.5">{item.time}</p>
-              </div>
-              <div className={`text-[10px] font-bold px-2 py-1 rounded-md ${item.color}`}>
-                {item.status}
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
 
       {/* Activity Heatmap */}
       <section>

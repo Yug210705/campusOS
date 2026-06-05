@@ -46,10 +46,10 @@ export async function registerUser(firebaseUid: string, email: string, name: str
 
 export async function getUserProfile(firebaseUid: string, isGuest: boolean = false) {
   if (isGuest) {
-    return {
-      name: "Guest User",
-      rollNumber: "GST-2026",
-      major: "B.Tech Computer Science",
+     return {
+       name: "Guest User",
+       rollNumber: "24UCS082",
+       major: "B.Tech Computer Science",
       classYear: "Class of '27",
       cgpa: "9.24",
       totalCredits: 112,

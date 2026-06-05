@@ -132,6 +132,19 @@ export default function ProfilePage() {
                     </div>
                   </div>
                 </div>
+                {/* Remove Photo Button */}
+                {profileImage && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setProfileImage(null);
+                    }}
+                    className="absolute -top-1 -left-1 w-5 h-5 bg-rose-500 hover:bg-rose-600 border-2 border-slate-950 rounded-full flex items-center justify-center shadow-sm transition-colors cursor-pointer z-20 active:scale-90"
+                    title="Remove Photo"
+                  >
+                    <X className="w-2.5 h-2.5 text-white" />
+                  </button>
+                )}
                 {/* Status Badge */}
                 <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 border-2 border-slate-950 rounded-full flex items-center justify-center shadow-sm">
                   <ShieldCheck className="w-3 h-3 text-white" />
@@ -150,7 +163,6 @@ export default function ProfilePage() {
             <div>
               <div className="flex items-center gap-1.5 mb-1">
                 <h2 className="text-xl font-bold text-white leading-none tracking-tight">{user.name}</h2>
-                <Sparkles className="w-4 h-4 text-yellow-400" />
               </div>
               <p className="text-[11px] font-medium text-indigo-200/80 tracking-wide">{user.major}</p>
               <div className="mt-2.5 inline-flex items-center gap-1 px-2 py-0.5 rounded bg-white/10 border border-white/5 backdrop-blur-md">
@@ -159,23 +171,6 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Bottom Row: Stats */}
-            <div className="flex items-center gap-6 pt-4 mt-4 border-t border-white/10">
-              <div>
-                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Current CGPA</p>
-                <div className="flex items-baseline gap-1">
-                  <p className="text-xl font-bold text-white leading-none">{user.cgpa}</p>
-                </div>
-              </div>
-              <div className="w-px h-6 bg-white/10" />
-              <div>
-                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Credits</p>
-                <div className="flex items-baseline gap-1">
-                  <p className="text-xl font-bold text-white leading-none">{user.totalCredits}</p>
-                  <p className="text-[10px] font-bold text-slate-500">/{user.maxCredits}</p>
-                </div>
-              </div>
-            </div>
           </div>
         </motion.section>
         ) : null}
