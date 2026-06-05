@@ -373,7 +373,7 @@ function QuestionRow({ question }: { question: InterviewQuestion }) {
     >
       <div className="flex justify-between items-start gap-3">
         <div className="flex items-start gap-2.5 min-w-0">
-          <span className="text-sm shrink-0 mt-0.5">📝</span>
+          <HelpCircle className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" />
           <h4 className="font-bold text-slate-800 text-sm leading-snug">{question.question}</h4>
         </div>
         <button className="text-[10px] font-bold text-indigo-600 shrink-0 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-md transition-colors mt-0.5">
