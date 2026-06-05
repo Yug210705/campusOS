@@ -2,15 +2,15 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Camera, X, Sparkles, CheckCircle2, Zap, ZapOff, Settings2, Image as ImageIcon, ChevronDown, Save, FileText, Upload, Download } from "lucide-react";
+import { Camera, X, Sparkles, CheckCircle2, Zap, ZapOff, Settings2, Image as ImageIcon, ChevronDown, Save, FileText, Upload, Download, Trash2, Wand2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 
 const steps = [
-  "Extracting whiteboard text...",
-  "Formatting structure...",
-  "Identifying key concepts...",
-  "Appending to notes...",
+  "Analyzing multiple frames...",
+  "Synthesizing information...",
+  "Structuring Markdown...",
+  "Finalizing notes...",
 ];
 
 const subjects = [
@@ -29,13 +29,18 @@ export default function CapturePage() {
   const [accumulatedNotes, setAccumulatedNotes] = useState("");
   const [showNotesDrawer, setShowNotesDrawer] = useState(false);
   
+  // Multi-Image States
+  const [capturedImages, setCapturedImages] = useState<string[]>([]);
+  const [showGallery, setShowGallery] = useState(false);
+  const [flyingImage, setFlyingImage] = useState<string | null>(null);
+  
   // Camera States
   const [isCapturing, setIsCapturing] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [captureMode, setCaptureMode] = useState<"auto" | "manual">("auto");
   const [flashMode, setFlashMode] = useState<"on" | "off" | "auto">("auto");
   const [showToast, setShowToast] = useState<string | null>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // Live Camera Feed
@@ -54,7 +59,7 @@ export default function CapturePage() {
           video: { facingMode: "environment" } 
         });
       } catch (err: any) {
-        // If rear camera is missing, fallback to any available camera (e.g. desktop webcam)
+        // Fallback
         if (err.name === 'NotFoundError' || err.name === 'OverconstrainedError') {
           try {
             stream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -85,12 +90,15 @@ export default function CapturePage() {
   }, []);
 
   const handleCapture = async () => {
-    if (isCapturing) return;
+    if (isCapturing || isGenerating) return;
+    
+    // Quick visual shutter feedback
     setIsCapturing(true);
-    handleToast("Extracting notes with AI...");
+    setTimeout(() => setIsCapturing(false), 150);
 
     try {
       let base64Image = "";
+      let rawDataUrl = "";
 
       if (videoRef.current) {
         const canvas = document.createElement("canvas");
@@ -99,16 +107,33 @@ export default function CapturePage() {
         const ctx = canvas.getContext("2d");
         if (ctx) {
           ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-          // Get the base64 string without the prefix for the API
-          const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
-          base64Image = dataUrl.split(',')[1];
+          rawDataUrl = canvas.toDataURL("image/jpeg", 0.8);
+          base64Image = rawDataUrl.split(',')[1];
         }
       }
 
-      if (!base64Image) {
-        throw new Error("Could not capture image from camera.");
-      }
+      if (!base64Image) throw new Error("Could not capture image from camera.");
 
+      // Trigger flying animation
+      setFlyingImage(rawDataUrl);
+      setTimeout(() => setFlyingImage(null), 800);
+
+      setCapturedImages(prev => [...prev, base64Image]);
+      handleToast("Photo snapped! Added to batch.");
+    } catch (error) {
+      console.error("Capture Error:", error);
+      handleToast("Failed to capture frame.");
+    }
+  };
+
+  const handleGenerateNotes = async () => {
+    if (capturedImages.length === 0) return;
+    
+    setIsGenerating(true);
+    setShowGallery(false);
+    handleToast("AI Processing Batch...");
+
+    try {
       // UX animation loop
       setCurrentStep(0);
       const interval = setInterval(() => {
@@ -118,7 +143,7 @@ export default function CapturePage() {
       const response = await fetch("/api/ocr", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: base64Image }),
+        body: JSON.stringify({ images: capturedImages }),
       });
 
       clearInterval(interval);
@@ -129,14 +154,38 @@ export default function CapturePage() {
       if (response.ok && data.notes) {
         setAccumulatedNotes(data.notes);
         setShowNotesDrawer(true);
+        setCapturedImages([]); // Clear gallery after successful generation
+        
+        // Save to LocalStorage
+        try {
+          const existing = JSON.parse(localStorage.getItem('campusOS_saved_notes') || '[]');
+          existing.push({
+            id: Date.now().toString(),
+            subject: activeSubject,
+            content: data.notes,
+            date: new Date().toISOString()
+          });
+          localStorage.setItem('campusOS_saved_notes', JSON.stringify(existing));
+          setTimeout(() => handleToast("Notes successfully saved to Revise Hub!"), 1000);
+        } catch (e) {
+          console.error("Failed to save to local storage", e);
+        }
+        
       } else {
-        handleToast(data.error || "Failed to analyze image.");
+        handleToast(data.error || "Failed to analyze image batch.");
       }
     } catch (error) {
-      console.error("OCR Capture Error:", error);
-      handleToast("An error occurred while scanning.");
+      console.error("OCR Generation Error:", error);
+      handleToast("An error occurred while generating notes.");
     } finally {
-      setIsCapturing(false);
+      setIsGenerating(false);
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setCapturedImages(prev => prev.filter((_, i) => i !== index));
+    if (capturedImages.length === 1) {
+      setShowGallery(false);
     }
   };
 
@@ -145,9 +194,8 @@ export default function CapturePage() {
     try {
       const html2pdf = (await import('html2pdf.js')).default;
       const element = document.getElementById('notes-pdf-container');
-      if (!element) {
-        throw new Error("PDF container not found");
-      }
+      if (!element) throw new Error("PDF container not found");
+      
       const opt = {
         margin:       0.5,
         filename:     `${activeSubject}-Notes.pdf`,
@@ -164,7 +212,7 @@ export default function CapturePage() {
 
   const handleToast = (message: string) => {
     setShowToast(message);
-    setTimeout(() => setShowToast(null), 2000);
+    setTimeout(() => setShowToast(null), 2500);
   };
 
   const toggleFlash = () => {
@@ -191,10 +239,25 @@ export default function CapturePage() {
             initial={{ opacity: 0, y: -20, x: "-50%" }}
             animate={{ opacity: 1, y: 0, x: "-50%" }}
             exit={{ opacity: 0, y: -20, x: "-50%" }}
-            className="absolute top-28 left-1/2 z-50 bg-white/20 backdrop-blur-md text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg border border-white/10"
+            className="absolute top-28 left-1/2 z-50 bg-white/20 backdrop-blur-md text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg border border-white/10 whitespace-nowrap"
           >
             {showToast}
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Flying Image Animation */}
+      <AnimatePresence>
+        {flyingImage && (
+          <motion.img 
+            src={flyingImage}
+            initial={{ opacity: 1, scale: 1, top: "50%", left: "50%", x: "-50%", y: "-50%", borderRadius: "16px" }}
+            animate={{ opacity: 0, scale: 0.1, top: "32px", left: "90%", x: "-50%", y: "-50%", borderRadius: "100%" }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
+            className="absolute z-50 object-cover shadow-2xl border-2 border-white pointer-events-none"
+            style={{ width: "300px", height: "400px" }}
+          />
         )}
       </AnimatePresence>
 
@@ -211,7 +274,7 @@ export default function CapturePage() {
         <div className="flex flex-col items-center relative">
           <button 
             onClick={() => setShowSubjectMenu(!showSubjectMenu)}
-            className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 hover:bg-white/20 transition-colors"
+            className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 hover:bg-white/20 transition-colors shadow-sm"
           >
             <div className="w-2 h-2 rounded-full bg-emerald-400" />
             <span className="text-xs font-bold">{activeSubject}</span>
@@ -232,7 +295,7 @@ export default function CapturePage() {
                     onClick={() => {
                       setActiveSubject(subject);
                       setShowSubjectMenu(false);
-                      setAccumulatedNotes(""); // Reset notes when changing subject for demo purposes
+                      setAccumulatedNotes(""); 
                       handleToast(`Changed to ${subject}`);
                     }}
                     className={`text-left text-xs font-bold px-3 py-2.5 rounded-xl transition-colors ${
@@ -267,19 +330,36 @@ export default function CapturePage() {
           </div>
         </div>
 
-        <button 
-          onClick={toggleFlash}
-          className="w-10 h-10 bg-white/10 rounded-full backdrop-blur-md flex flex-col items-center justify-center hover:bg-white/20 active:scale-95 transition-all mt-1"
-        >
-          {flashMode === "off" ? <ZapOff className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
-          {flashMode === "auto" && <span className="text-[7px] font-bold tracking-wide mt-0.5">AUTO</span>}
-        </button>
+        {/* Right Icons: Flash & Gallery Bubble */}
+        <div className="flex flex-col items-center gap-3">
+          {capturedImages.length > 0 ? (
+            <motion.button 
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              onClick={() => setShowGallery(true)}
+              className="relative w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center hover:bg-indigo-400 active:scale-95 transition-all mt-1 shadow-lg shadow-indigo-500/50 border border-indigo-400"
+            >
+              <ImageIcon className="w-5 h-5" />
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-black">
+                {capturedImages.length}
+              </span>
+            </motion.button>
+          ) : (
+            <button 
+              onClick={toggleFlash}
+              className="w-10 h-10 bg-white/10 rounded-full backdrop-blur-md flex flex-col items-center justify-center hover:bg-white/20 active:scale-95 transition-all mt-1"
+            >
+              {flashMode === "off" ? <ZapOff className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
+              {flashMode === "auto" && <span className="text-[7px] font-bold tracking-wide mt-0.5">AUTO</span>}
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="flex-1 relative flex items-center justify-center w-full h-full z-10 pointer-events-none">
         <div className="absolute inset-0 bg-[#111] opacity-50" />
 
-        {!isCapturing && !showNotesDrawer && (
+        {!isCapturing && !showNotesDrawer && !showGallery && !isGenerating && (
           <div className="relative w-[85%] aspect-[3/4] max-h-[70%] z-20 translate-y-8">
             <div className="absolute inset-0 rounded-2xl shadow-[0_0_0_9999px_rgba(0,0,0,0.6)]" />
             
@@ -301,8 +381,9 @@ export default function CapturePage() {
         )}
       </div>
 
+      {/* Generation Loader Overlay */}
       <AnimatePresence>
-        {isCapturing && (
+        {isGenerating && (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -356,6 +437,53 @@ export default function CapturePage() {
         )}
       </AnimatePresence>
 
+      {/* Gallery Drawer */}
+      <AnimatePresence>
+        {showGallery && (
+          <motion.div 
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className="absolute inset-x-0 bottom-0 max-h-[85vh] bg-slate-900 rounded-t-3xl z-50 flex flex-col shadow-[0_-10px_40px_rgba(0,0,0,0.8)] border-t border-slate-800"
+          >
+            <div className="flex justify-between items-center px-6 py-4 border-b border-slate-800">
+              <h3 className="text-white font-bold text-lg">Batch ({capturedImages.length})</h3>
+              <button onClick={() => setShowGallery(false)} className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-slate-700 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto grid grid-cols-2 gap-4">
+              {capturedImages.map((img, i) => (
+                <div key={i} className="relative aspect-[3/4] bg-slate-800 rounded-2xl overflow-hidden border border-slate-700 shadow-md">
+                  <img src={`data:image/jpeg;base64,${img}`} className="w-full h-full object-cover" alt={`Frame ${i}`} />
+                  <button 
+                    onClick={() => removeImage(i)}
+                    className="absolute top-2 right-2 w-8 h-8 bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center text-white/80 hover:bg-red-500/80 hover:text-white transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                  <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-md text-[10px] font-bold text-white px-2 py-1 rounded-md">
+                    {i + 1}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="p-6 bg-slate-900 border-t border-slate-800 pt-4 pb-12">
+              <button 
+                onClick={handleGenerateNotes}
+                className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-indigo-500/20 active:scale-95 transition-transform flex items-center justify-center gap-2 text-lg"
+              >
+                <Wand2 className="w-6 h-6" /> Generate AI Notes
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Notes Markdown Viewer */}
       <AnimatePresence>
         {showNotesDrawer && (
           <motion.div 
@@ -363,7 +491,7 @@ export default function CapturePage() {
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="absolute inset-x-0 bottom-0 h-[65vh] bg-white rounded-t-3xl z-50 flex flex-col shadow-[0_-10px_40px_rgba(0,0,0,0.5)]"
+            className="absolute inset-x-0 bottom-0 h-[85vh] bg-white rounded-t-3xl z-50 flex flex-col shadow-[0_-10px_40px_rgba(0,0,0,0.5)]"
           >
             <div className="flex justify-center pt-3 pb-2">
               <div className="w-12 h-1.5 bg-slate-200 rounded-full" />
@@ -387,9 +515,11 @@ export default function CapturePage() {
                 id="notes-pdf-container" 
                 className="bg-white mx-auto shadow-sm border border-slate-200 p-8 sm:p-12 w-full max-w-[210mm] min-h-[297mm]"
               >
-                <div className="border-b border-slate-200 pb-4 mb-6">
-                  <h1 className="text-3xl font-black text-slate-900">{activeSubject} Notes</h1>
-                  <p className="text-slate-500 font-medium mt-1 text-sm">Extracted via CampusOS AI • {new Date().toLocaleDateString()}</p>
+                <div className="border-b border-slate-200 pb-4 mb-6 flex items-end justify-between">
+                  <div>
+                    <h1 className="text-3xl font-black text-slate-900">{activeSubject} Notes</h1>
+                    <p className="text-slate-500 font-medium mt-1 text-sm">CampusOS Multi-Shot AI • {new Date().toLocaleDateString()}</p>
+                  </div>
                 </div>
                 
                 <article className="text-slate-800 text-sm sm:text-base leading-relaxed [&>h1]:text-2xl [&>h1]:font-bold [&>h1]:mt-6 [&>h1]:mb-4 [&>h2]:text-xl [&>h2]:font-bold [&>h2]:mt-5 [&>h2]:mb-3 [&>h3]:text-lg [&>h3]:font-bold [&>h3]:mt-4 [&>h3]:mb-2 [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:mb-4 [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:mb-4 [&>p]:mb-4 [&>pre]:bg-slate-900 [&>pre]:text-slate-50 [&>pre]:p-4 [&>pre]:rounded-lg [&>pre]:overflow-x-auto [&>code]:bg-slate-100 [&>code]:text-pink-600 [&>code]:px-1.5 [&>code]:py-0.5 [&>code]:rounded-md [&>blockquote]:border-l-4 [&>blockquote]:border-slate-300 [&>blockquote]:pl-4 [&>blockquote]:italic [&>blockquote]:text-slate-600">
@@ -406,7 +536,10 @@ export default function CapturePage() {
                 <Download className="w-5 h-5" /> Download PDF
               </button>
               <button 
-                onClick={() => setShowNotesDrawer(false)}
+                onClick={() => {
+                  setShowNotesDrawer(false);
+                  setAccumulatedNotes("");
+                }}
                 className="flex-1 bg-black text-white font-bold py-3.5 rounded-xl active:scale-95 transition-transform flex items-center justify-center gap-2"
               >
                 <Camera className="w-5 h-5" /> Keep Capturing
@@ -420,33 +553,30 @@ export default function CapturePage() {
       <div className="h-40 bg-black flex items-center justify-around px-8 z-40 pb-safe relative">
         
         {/* Floating Instruction Text */}
-        {!isCapturing && !showNotesDrawer && (
+        {!isGenerating && !showNotesDrawer && !showGallery && (
           <motion.p 
             initial={{ opacity: 0.5 }}
             animate={{ opacity: 1 }}
             transition={{ repeat: Infinity, duration: 1.5, repeatType: "reverse" }}
             className="absolute -top-6 inset-x-0 text-center text-white/80 text-sm font-medium tracking-wide drop-shadow-md"
           >
-            {captureMode === "auto" ? "Position whiteboard in view" : "Tap shutter to extract notes"}
+            {captureMode === "auto" ? "Position whiteboard in view" : "Tap shutter to add to batch"}
           </motion.p>
         )}
 
-        {!isCapturing && (
+        {!isGenerating && !showGallery && (
           <>
             <button 
               onClick={() => setShowNotesDrawer(!showNotesDrawer)}
               className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 active:scale-95 transition-all relative"
             >
               <FileText className="w-5 h-5 text-white" />
-              {accumulatedNotes && (
-                <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-black" />
-              )}
             </button>
 
             <button 
               onClick={handleCapture}
               disabled={isCapturing}
-              className={`relative w-20 h-20 rounded-full border-[3px] border-white flex items-center justify-center transition-all ${isCapturing ? "scale-90 opacity-50" : "active:scale-95"}`}
+              className={`relative w-20 h-20 rounded-full border-[3px] border-white flex items-center justify-center transition-all ${isCapturing ? "scale-90 opacity-50 bg-white/50" : "active:scale-95"}`}
             >
               <div className="w-[4.25rem] h-[4.25rem] bg-white rounded-full flex items-center justify-center shadow-inner">
                 <span className="sr-only">Capture</span>
