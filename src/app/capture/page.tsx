@@ -533,7 +533,7 @@ export default function CapturePage() {
             <div className="flex-1 overflow-y-auto bg-slate-100 p-4 pb-24 sm:p-8">
               <div 
                 id="notes-pdf-container" 
-                className="bg-white mx-auto shadow-sm border border-slate-200 p-8 sm:p-12 w-full max-w-[210mm] min-h-[297mm]"
+                className="bg-white mx-auto shadow-sm border border-slate-200 p-8 sm:p-12 w-full max-w-[210mm] min-h-[297mm] overflow-hidden break-words"
               >
                 <div className="border-b border-slate-200 pb-4 mb-6 flex items-end justify-between">
                   <div>
@@ -542,7 +542,7 @@ export default function CapturePage() {
                   </div>
                 </div>
                 
-                <article className="text-slate-800 text-sm sm:text-base leading-relaxed [&>h1]:text-2xl [&>h1]:font-bold [&>h1]:mt-6 [&>h1]:mb-4 [&>h2]:text-xl [&>h2]:font-bold [&>h2]:mt-5 [&>h2]:mb-3 [&>h3]:text-lg [&>h3]:font-bold [&>h3]:mt-4 [&>h3]:mb-2 [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:mb-4 [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:mb-4 [&>p]:mb-4 [&>pre]:bg-slate-900 [&>pre]:text-slate-50 [&>pre]:p-4 [&>pre]:rounded-lg [&>pre]:overflow-x-auto [&>code]:bg-slate-100 [&>code]:text-pink-600 [&>code]:px-1.5 [&>code]:py-0.5 [&>code]:rounded-md [&>blockquote]:border-l-4 [&>blockquote]:border-slate-300 [&>blockquote]:pl-4 [&>blockquote]:italic [&>blockquote]:text-slate-600">
+                <article className="text-slate-800 text-sm sm:text-base leading-relaxed break-words [&>h1]:text-2xl [&>h1]:font-bold [&>h1]:mt-6 [&>h1]:mb-4 [&>h2]:text-xl [&>h2]:font-bold [&>h2]:mt-5 [&>h2]:mb-3 [&>h3]:text-lg [&>h3]:font-bold [&>h3]:mt-4 [&>h3]:mb-2 [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:mb-4 [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:mb-4 [&>p]:mb-4 [&>p]:break-words [&>pre]:bg-slate-900 [&>pre]:text-slate-50 [&>pre]:p-4 [&>pre]:rounded-lg [&>pre]:whitespace-pre-wrap [&>pre]:break-words [&>pre]:overflow-x-hidden [&>code]:bg-slate-100 [&>code]:text-pink-600 [&>code]:px-1.5 [&>code]:py-0.5 [&>code]:rounded-md [&>code]:break-words [&>blockquote]:border-l-4 [&>blockquote]:border-slate-300 [&>blockquote]:pl-4 [&>blockquote]:italic [&>blockquote]:text-slate-600">
                   <ReactMarkdown>{accumulatedNotes || "No notes extracted yet. Scan a whiteboard to begin!"}</ReactMarkdown>
                 </article>
               </div>
