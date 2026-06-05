@@ -35,7 +35,7 @@ Do not include conversational filler like "Here are the notes" - output ONLY the
         "X-Title": "CampusOS Web App",
       },
       body: JSON.stringify({
-        model: "meta-llama/llama-3.2-11b-vision-instruct:free", // Free vision model
+        model: "google/gemini-2.0-flash-exp:free", // Free vision model
         messages: [
           {
             role: "user",
