@@ -30,7 +30,7 @@ export default function BottomNav() {
   return (
     <>
       <div 
-        className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#EAEAEA] z-50 h-[84px]"
+        className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#EAEAEA] z-50 h-[72px]"
         style={{ boxShadow: "0 -2px 20px rgba(15,23,42,0.04)" }}
       >
         <div className="relative w-full max-w-md mx-auto px-3 h-full">
