@@ -59,7 +59,7 @@ export default function LearnHome() {
   }, [authUser]);
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 pt-8 pb-28 max-w-md mx-auto flex flex-col gap-8">
+    <div className="min-h-screen bg-slate-50 px-4 pt-8 pb-36 max-w-md mx-auto flex flex-col gap-8">
       
       {/* Header */}
       <header className="flex justify-between items-center">
@@ -141,23 +141,23 @@ export default function LearnHome() {
       {/* Grid Metrics */}
       <section className="grid grid-cols-2 gap-4">
         <StatCard 
-          title="PLACEMENT" 
-          value={user?.learningStats?.placementPercent || "0%"} 
-          subtitle={user?.learningStats?.placementTrack || "Not Set"}
+          title="KNOWLEDGE COVERAGE" 
+          value={user?.learningStats?.conceptsMastered || "0 Topics"} 
+          subtitle={user?.learningStats?.conceptsSubtitle || "Start studying"}
           variant="dense"
           icon={Target}
         />
         <StatCard 
           title="CONFIDENCE" 
-          value={user?.learningStats?.confidenceAvg || "0%"} 
-          subtitle={user?.learningStats?.confidenceSubtitle || "Keep practicing"}
+          value={user?.learningStats?.confidenceAvg || "0.0 / 5.0"} 
+          subtitle={user?.learningStats?.confidenceSubtitle || "No data yet"}
           variant="dense"
           icon={Zap}
         />
         <StatCard 
-          title="CONCEPTS" 
-          value={user?.learningStats?.conceptsMastered || "0"} 
-          subtitle={user?.learningStats?.conceptsSubtitle || "Start studying"}
+          title="WEAK TOPICS" 
+          value="3 Topics" 
+          subtitle="Requires attention"
           variant="dense"
           icon={Brain}
         />
@@ -178,7 +178,7 @@ export default function LearnHome() {
         <div className="grid grid-cols-2 gap-3">
           <QuickAction title="Capture Board" icon={Camera} href="/capture" primary />
           <QuickAction title="Revise Notes" icon={BookOpen} href="/revise" />
-          <QuickAction title="Ask AI Tutor" icon={Sparkles} href="/ai" />
+          <QuickAction title="What's Next?" icon={Target} href="/notes" />
         </div>
       </section>
 
@@ -218,11 +218,12 @@ export default function LearnHome() {
         
         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
           {[
-            { id: 1, code: "OS", title: "CPU Scheduling", time: "10:30 AM", status: "Mastered", color: "text-emerald-600 bg-emerald-50" },
-            { id: 2, code: "DB", title: "Normalization", time: "Yesterday", status: "Review", color: "text-orange-600 bg-orange-50" },
+            { id: 1, code: "OS", title: "CPU Scheduling", slug: "cpu-scheduling", time: "10:30 AM", status: "Mastered", color: "text-emerald-600 bg-emerald-50" },
+            { id: 2, code: "DB", title: "Normalization", slug: "normalization", time: "Yesterday", status: "Review", color: "text-orange-600 bg-orange-50" },
           ].map((item, idx, arr) => (
-            <div 
+            <Link 
               key={item.id}
+              href={`/notes/${item.slug}`}
               className={`flex items-center gap-3 p-3 hover:bg-slate-50 transition-colors ${
                 idx !== arr.length - 1 ? 'border-b border-slate-100' : ''
               }`}
@@ -237,7 +238,7 @@ export default function LearnHome() {
               <div className={`text-[10px] font-bold px-2 py-1 rounded-md ${item.color}`}>
                 {item.status}
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </section>
