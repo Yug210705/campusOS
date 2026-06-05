@@ -84,30 +84,29 @@ export default function CapturePage() {
     };
   }, []);
 
-  const handleCameraCapture = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-    const file = e.target.files[0];
-    
+  const handleCapture = async () => {
     if (isCapturing) return;
     setIsCapturing(true);
     handleToast("Extracting notes with AI...");
 
     try {
-      // Read file to base64
-      const base64Image = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const result = reader.result as string;
-          // Extract just the base64 part, stripping the data URL prefix if needed by the API,
-          // though our API handles both. We'll send the raw base64.
-          resolve(result.split(',')[1]);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
+      let base64Image = "";
+
+      if (videoRef.current) {
+        const canvas = document.createElement("canvas");
+        canvas.width = videoRef.current.videoWidth || 1080;
+        canvas.height = videoRef.current.videoHeight || 1920;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+          // Get the base64 string without the prefix for the API
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
+          base64Image = dataUrl.split(',')[1];
+        }
+      }
 
       if (!base64Image) {
-        throw new Error("Could not process the captured image.");
+        throw new Error("Could not capture image from camera.");
       }
 
       // UX animation loop
@@ -138,10 +137,6 @@ export default function CapturePage() {
       handleToast("An error occurred while scanning.");
     } finally {
       setIsCapturing(false);
-      // Reset input so the same file can be selected again
-      if (cameraInputRef.current) {
-        cameraInputRef.current.value = '';
-      }
     }
   };
 
@@ -448,21 +443,15 @@ export default function CapturePage() {
               )}
             </button>
 
-            <label 
-              className={`relative w-20 h-20 rounded-full border-[3px] border-white flex items-center justify-center transition-all cursor-pointer ${isCapturing ? "scale-90 opacity-50 pointer-events-none" : "active:scale-95"}`}
+            <button 
+              onClick={handleCapture}
+              disabled={isCapturing}
+              className={`relative w-20 h-20 rounded-full border-[3px] border-white flex items-center justify-center transition-all ${isCapturing ? "scale-90 opacity-50" : "active:scale-95"}`}
             >
-              <input 
-                type="file" 
-                accept="image/*" 
-                capture="environment" 
-                ref={cameraInputRef} 
-                onChange={handleCameraCapture} 
-                className="absolute w-0 h-0 opacity-0 overflow-hidden" 
-              />
               <div className="w-[4.25rem] h-[4.25rem] bg-white rounded-full flex items-center justify-center shadow-inner">
                 <span className="sr-only">Capture</span>
               </div>
-            </label>
+            </button>
 
             <button 
               onClick={() => handleToast("Adjustments panel coming soon")}
