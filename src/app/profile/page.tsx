@@ -9,7 +9,6 @@ import {
   Utensils, 
   GraduationCap, 
   BookOpen, 
-  Wifi, 
   ChevronRight,
   LogOut,
   CreditCard,
@@ -286,31 +285,6 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Campus Connectivity */}
-          <div className="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden group mb-8 cursor-pointer active:scale-[0.98] transition-transform">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-50 rounded-full mix-blend-multiply filter blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 translate-x-1/2 -translate-y-1/2" />
-            
-            <div className="flex items-center justify-between mb-4 relative z-10">
-              <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Campus Connectivity</h3>
-            </div>
-            
-            <div className="flex flex-col gap-3 relative z-10">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-cyan-50 flex items-center justify-center text-cyan-600 shrink-0 shadow-sm border border-cyan-100/50">
-                  <Wifi className="w-4 h-4" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Wi-Fi Devices</p>
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-bold text-slate-800">{user?.wifiDevicesRegistered || 0} <span className="text-slate-400 font-medium">/ {user?.wifiDevicesMax || 0} Registered</span></p>
-                    <div className="w-6 h-6 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-cyan-50 transition-colors">
-                      <ChevronRight className="w-3 h-3 text-slate-400 group-hover:text-cyan-600 transition-colors" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
           
         </motion.div>
       </div>

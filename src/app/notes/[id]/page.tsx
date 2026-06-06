@@ -86,7 +86,7 @@ We also discussed process states (ready, running, and waiting).`);
   return (
     <div className="flex flex-col min-h-screen bg-slate-50 max-w-md mx-auto relative pb-28">
       {/* Header */}
-      <header className="sticky top-0 bg-white/80 backdrop-blur-xl z-40 border-b border-slate-100 px-4 pt-12 pb-4">
+      <header className="bg-white border-b border-slate-100 px-4 pt-12 pb-4">
         <div className="flex justify-between items-start mb-4">
           <button 
             onClick={() => router.back()}
