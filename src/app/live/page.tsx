@@ -4,13 +4,13 @@ import { useState, useEffect, useRef } from "react";
 import { 
   MapPin, Users, Coffee, Shirt, Radio, Bell, ChevronRight, Activity, 
   QrCode, Timer, CheckCircle2, X, Dumbbell, Loader2, ArrowRight,
-  BookOpen, Calendar, Utensils, Megaphone, Trophy, Briefcase, Zap, Droplet
+  BookOpen, Calendar, Utensils, Megaphone, Trophy, Briefcase, Zap, Droplet, AlertCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { Scanner } from '@yudiel/react-qr-scanner';
 
-type BookingState = "idle" | "selecting" | "reserved" | "scanning" | "confirmed";
+type BookingState = "idle" | "selecting" | "reserved" | "scanning" | "confirmed" | "reporting";
 
 // Mock Library Map Data
 const libraryTables = [
@@ -137,15 +137,25 @@ export default function LiveHome() {
     setSelectedSeat(null);
   };
 
+  const startReporting = () => {
+    setBookingState("reporting");
+    setSelectedSeat(null);
+  };
+
   const confirmSelection = () => {
-    if (!selectedSeat) return;
-    setTimeLeft(900);
-    setBookingState("reserved");
+    if (bookingState === "reporting") {
+      alert("Report submitted! The student has 5 minutes to verify their presence, or this seat will be vacated.");
+      setBookingState("idle");
+    } else {
+      setBookingState("reserved");
+      setTimeLeft(15 * 60); // 15 mins
+    }
   };
 
   const cancelBooking = () => {
     setBookingState("idle");
     setSelectedSeat(null);
+    setTimeLeft(15 * 60);
   };
 
   return (
@@ -350,10 +360,12 @@ export default function LiveHome() {
                       bookingState === "reserved" ? "text-yellow-400" : "text-emerald-400"
                     }`} />
                     <span className={`text-[10px] font-bold uppercase tracking-wider ${
-                      bookingState === "reserved" ? "text-yellow-400" : "text-emerald-400"
+                      bookingState === "reserved" ? "text-yellow-400" : 
+                      bookingState === "reporting" ? "text-rose-400" : "text-emerald-400"
                     }`}>
                       {bookingState === "confirmed" ? "Seat Booked" : 
-                       bookingState === "selecting" ? "Select a Seat" : "High Traffic"}
+                       bookingState === "selecting" ? "Select a Seat" :
+                       bookingState === "reporting" ? "Report Empty Seat" : "High Traffic"}
                     </span>
                   </div>
                   
@@ -370,6 +382,9 @@ export default function LiveHome() {
                     <h2 className="text-2xl font-bold text-white leading-tight mb-2">Central Library is 92% Full</h2>
                     <p className="text-sm font-medium text-slate-400 mb-6">Quiet reading hall has 4 seats left. Main floor is completely occupied.</p>
                     <div className="flex gap-3">
+                      <button onClick={startReporting} className="flex-1 bg-white/10 hover:bg-white/20 text-white border border-white/10 font-bold py-3.5 px-4 rounded-xl active:scale-95 transition-all flex items-center justify-center gap-2">
+                        <AlertCircle className="w-4 h-4 text-rose-400" /> Report Empty
+                      </button>
                       <button onClick={startSelection} className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-emerald-500/30 active:scale-95 transition-all flex items-center justify-center gap-2">
                         <MapPin className="w-4 h-4" /> Book Seat
                       </button>
@@ -377,9 +392,12 @@ export default function LiveHome() {
                   </>
                 )}
 
-                {bookingState === "selecting" && (
+                {(bookingState === "selecting" || bookingState === "reporting") && (
                   <>
-                    <h2 className="text-lg font-bold text-white leading-tight mb-3">Quiet Reading Hall</h2>
+                    <h2 className="text-lg font-bold text-white leading-tight mb-1">Quiet Reading Hall</h2>
+                    <p className="text-xs text-slate-400 mb-4">
+                      {bookingState === "reporting" ? "Select a reserved seat that is physically empty." : "Select an available seat to book."}
+                    </p>
                     
                     {/* Visual Seat Map */}
                     <div className="bg-white/5 rounded-xl p-4 mb-4 border border-white/10">
@@ -393,16 +411,21 @@ export default function LiveHome() {
                               
                               {table.seats.map((seat) => {
                                 const isSelected = selectedSeat === seat.id;
+                                const isReporting = bookingState === "reporting";
+                                const isDisabled = isReporting ? !seat.isOccupied : seat.isOccupied;
+
                                 return (
                                   <button
                                     key={seat.id}
-                                    disabled={seat.isOccupied}
+                                    disabled={isDisabled}
                                     onClick={() => setSelectedSeat(seat.id)}
                                     className={`w-10 h-10 rounded-lg flex items-center justify-center text-xs font-bold transition-all relative z-10 ${
-                                      seat.isOccupied 
-                                        ? "bg-slate-800 text-slate-600 cursor-not-allowed" 
+                                      isDisabled 
+                                        ? "bg-slate-800 text-slate-600 cursor-not-allowed border border-slate-700/50" 
                                         : isSelected
-                                          ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/50 scale-110"
+                                          ? isReporting 
+                                            ? "bg-rose-500 text-white shadow-md shadow-rose-500/50 scale-110"
+                                            : "bg-emerald-500 text-white shadow-md shadow-emerald-500/50 scale-110"
                                           : "bg-white/10 text-white/80 hover:bg-white/20 active:scale-95 border border-white/20"
                                     }`}
                                   >
@@ -422,11 +445,13 @@ export default function LiveHome() {
                         onClick={confirmSelection} 
                         className={`flex-1 font-bold py-3.5 px-4 text-sm rounded-xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 ${
                           selectedSeat 
-                            ? "bg-emerald-500 text-white shadow-emerald-500/30 hover:bg-emerald-400" 
+                            ? bookingState === "reporting" 
+                              ? "bg-rose-500 text-white shadow-rose-500/30 hover:bg-rose-400"
+                              : "bg-emerald-500 text-white shadow-emerald-500/30 hover:bg-emerald-400" 
                             : "bg-white/10 text-white/40 cursor-not-allowed"
                         }`}
                       >
-                        {selectedSeat ? `Confirm ${selectedSeat}` : "Select a Seat"}
+                        {selectedSeat ? (bookingState === "reporting" ? `Report ${selectedSeat}` : `Confirm ${selectedSeat}`) : "Select a Seat"}
                       </button>
                     </div>
                   </>
