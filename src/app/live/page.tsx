@@ -393,32 +393,42 @@ export default function LiveHome() {
                     <h2 className="text-2xl font-bold text-white leading-tight mb-2">Central Library is 92% Full</h2>
                     <p className="text-sm font-medium text-slate-400 mb-6">Quiet reading hall has 4 seats left. Main floor is completely occupied.</p>
                     <div className="flex gap-3">
-                      <button onClick={startReporting} className="flex-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 font-bold py-3.5 px-4 rounded-xl active:scale-95 transition-all flex items-center justify-center gap-2">
+                      <button onClick={startReporting} className="flex-[0.7] bg-white/5 hover:bg-rose-500/10 text-slate-300 hover:text-rose-400 border border-white/10 hover:border-rose-500/30 font-bold py-3.5 px-4 rounded-xl active:scale-95 transition-all flex items-center justify-center gap-2 text-[13px]">
                         <AlertCircle className="w-4 h-4" /> Report Empty
                       </button>
-                      <button onClick={startSelection} className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-emerald-500/30 active:scale-95 transition-all flex items-center justify-center gap-2">
+                      <button onClick={startSelection} className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-emerald-500/30 active:scale-95 transition-all flex items-center justify-center gap-2 text-[13px]">
                         <MapPin className="w-4 h-4" /> Book Seat
                       </button>
                     </div>
                   </>
                 )}
 
-                {(bookingState === "selecting" || bookingState === "reporting") && (
+                {bookingState === "selecting" && (
                   <>
                     <h2 className="text-lg font-bold text-white leading-tight mb-1">Quiet Reading Hall</h2>
-                    <p className="text-xs text-slate-400 mb-4">
-                      {bookingState === "reporting" ? "Select a reserved seat that is physically empty." : "Select an available seat to book."}
-                    </p>
-                    
-                    {bookingState === "reporting" && (
-                      <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3 mb-4 flex items-start gap-3">
-                        <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
-                        <p className="text-[11px] text-rose-200 font-medium leading-relaxed">
-                          Reporting an empty seat starts a 5-minute eviction timer. If the owner doesn't verify their presence, the seat becomes yours.
+                    <p className="text-xs text-slate-400 mb-4">Select an available seat to book.</p>
+                  </>
+                )}
+
+                {bookingState === "reporting" && (
+                  <div className="relative overflow-hidden bg-rose-500/10 border border-rose-500/20 rounded-2xl p-4 mb-4">
+                    <div className="absolute top-[-50%] right-[-10%] w-32 h-32 bg-rose-500/20 blur-3xl rounded-full" />
+                    <div className="flex gap-3 relative z-10">
+                      <div className="w-8 h-8 rounded-full bg-rose-500/20 flex items-center justify-center shrink-0 border border-rose-500/30">
+                        <AlertCircle className="w-4 h-4 text-rose-400" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-bold text-rose-300 mb-0.5">Report Empty Seat</h3>
+                        <p className="text-[10px] text-rose-200/70 leading-relaxed font-medium">
+                          Select a reserved seat that is physically empty. The owner will be given a 5-minute eviction timer.
                         </p>
                       </div>
-                    )}
-                    
+                    </div>
+                  </div>
+                )}
+                
+                {(bookingState === "selecting" || bookingState === "reporting") && (
+                  <>
                     {/* Visual Seat Map */}
                     <div className="bg-white/5 rounded-xl p-4 mb-4 border border-white/10">
                       <div className="grid grid-cols-2 gap-6">
@@ -441,12 +451,14 @@ export default function LiveHome() {
                                     onClick={() => setSelectedSeat(seat.id)}
                                     className={`w-10 h-10 rounded-lg flex items-center justify-center text-xs font-bold transition-all relative z-10 ${
                                       isDisabled 
-                                        ? "bg-slate-800 text-slate-600 cursor-not-allowed border border-slate-700/50" 
+                                        ? "bg-slate-800/40 text-slate-700 cursor-not-allowed border border-slate-800/50" 
                                         : isSelected
                                           ? isReporting 
                                             ? "bg-rose-500 text-white shadow-md shadow-rose-500/50 scale-110"
                                             : "bg-emerald-500 text-white shadow-md shadow-emerald-500/50 scale-110"
-                                          : "bg-white/10 text-white/80 hover:bg-white/20 active:scale-95 border border-white/20"
+                                          : isReporting
+                                            ? "bg-rose-500/10 text-rose-400 border border-rose-500/30 hover:bg-rose-500/20 active:scale-95"
+                                            : "bg-white/10 text-white/80 hover:bg-white/20 active:scale-95 border border-white/20"
                                     }`}
                                   >
                                     {seat.id.split('-')[1]}
