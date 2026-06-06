@@ -1,6 +1,6 @@
 "use client";
 
-import { Flame, Target, Zap, Brain, Camera, BookOpen, Sparkles, MoreHorizontal, User, Settings, LogOut, Folder } from "lucide-react";
+import { Flame, Target, Zap, Brain, Camera, BookOpen, Sparkles, MoreHorizontal, User, Settings, LogOut, Folder, Download } from "lucide-react";
 import StatCard from "@/components/home/StatCard";
 import QuickAction from "@/components/home/QuickAction";
 import Heatmap from "@/components/home/Heatmap";
@@ -10,13 +10,16 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { getUserProfile } from "@/actions/dbActions";
 import { useAuth } from "@/context/AuthContext";
+import { usePwa } from "@/context/PwaContext";
 
 export default function LearnHome() {
   const { profileImage } = useUser();
   const { user: authUser, logout } = useAuth();
+  const { isInstallable, isInstalled, installApp } = usePwa();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [noteFolders, setNoteFolders] = useState<Record<string, number>>({});
+  const [usedRevision, setUsedRevision] = useState(false);
 
   useEffect(() => {
     try {
@@ -26,6 +29,10 @@ export default function LearnHome() {
         return acc;
       }, {});
       setNoteFolders(folders);
+      
+      const seeded = localStorage.getItem("campusOS_revision_seeded") === "true";
+      const used = localStorage.getItem("campusOS_used_revision") === "true";
+      setUsedRevision(seeded || used);
     } catch (e) {
       console.error(e);
     }
@@ -128,13 +135,38 @@ export default function LearnHome() {
       </header>
 
       {/* Hero Metric */}
-      <section>
+      <section className="flex flex-col gap-4">
         <StatCard 
           title="Revision Streak" 
           value={user?.learningStats?.revisionStreak || "0 Days"} 
           variant="hero"
           icon={Flame}
         />
+
+        {/* Smart Install Banner */}
+        {isInstallable && !isInstalled && usedRevision && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-indigo-50 border border-indigo-100 rounded-3xl p-5 flex items-center justify-between gap-4 shadow-sm"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shrink-0">
+                <Download className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-slate-800">Install CampusOS</p>
+                <p className="text-[10px] text-slate-500 font-semibold mt-0.5">For a faster, offline experience</p>
+              </div>
+            </div>
+            <button
+              onClick={installApp}
+              className="bg-indigo-600 hover:bg-indigo-700 active:scale-95 transition-all text-xs font-bold px-4 py-2 rounded-xl text-white shadow-sm whitespace-nowrap"
+            >
+              Install
+            </button>
+          </motion.div>
+        )}
       </section>
 
       {/* Grid Metrics */}

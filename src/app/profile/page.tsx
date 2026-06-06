@@ -15,16 +15,19 @@ import {
   Sparkles,
   Camera,
   X,
-  Loader2
+  Loader2,
+  Download
 } from "lucide-react";
 import { useUser } from "@/context/UserContext";
 import { useRef, useState, useEffect } from "react";
 import { getUserProfile } from "@/actions/dbActions";
 import { useAuth } from "@/context/AuthContext";
+import { usePwa } from "@/context/PwaContext";
 
 export default function ProfilePage() {
   const { profileImage, setProfileImage } = useUser();
   const { user: authUser, logout } = useAuth();
+  const { isInstallable, isInstalled, installApp } = usePwa();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showVirtualId, setShowVirtualId] = useState(false);
   const [user, setUser] = useState<any>(null);
@@ -282,6 +285,50 @@ export default function ProfilePage() {
                   <p className="text-sm font-bold text-slate-800">{user?.currentSemester || "Loading..."}</p>
                 </div>
               </div>
+
+              {isInstallable && !isInstalled && (
+                <>
+                  <div className="w-full h-px bg-slate-100" />
+                  <div className="flex items-center justify-between gap-3 pt-1">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0 shadow-sm border border-indigo-100/50">
+                        <Download className="w-4 h-4" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">App Installation</p>
+                        <p className="text-sm font-bold text-slate-800">CampusOS PWA</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={installApp}
+                      className="bg-indigo-600 hover:bg-indigo-700 active:scale-95 transition-all text-xs font-black px-4 py-2 rounded-xl text-white shadow-sm"
+                    >
+                      Install App
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {isInstalled && (
+                <>
+                  <div className="w-full h-px bg-slate-100" />
+                  <div className="flex items-center justify-between gap-3 pt-1">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0 shadow-sm border border-emerald-100/50">
+                        <ShieldCheck className="w-4 h-4" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">App Installation</p>
+                        <p className="text-sm font-bold text-slate-800">CampusOS PWA</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-100 px-3 py-1.5 rounded-xl text-xs font-black shadow-sm">
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                      Installed
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
