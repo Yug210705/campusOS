@@ -34,7 +34,7 @@ export async function GET() {
       profileImage: "",
       learningStats: {
         revisionStreak: "12 Days",
-        streakSubtitle: "Top 5% of class",
+        streakSubtitle: "",
         placementPercent: "68%",
         placementTrack: "Software Eng.",
         confidenceAvg: "8.4",

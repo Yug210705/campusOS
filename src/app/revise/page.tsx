@@ -18,6 +18,7 @@ import {
   formatRelativeTime,
   parseConceptsFromNote
 } from "@/lib/revision";
+import { usePwa } from "@/context/PwaContext";
 
 export default function RevisePage() {
   const [savedNotes, setSavedNotes] = useState<any[]>([]);
@@ -25,6 +26,7 @@ export default function RevisePage() {
   const [lastSession, setLastSession] = useState<any | null>(null);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const router = useRouter();
+  const { isOnline } = usePwa();
 
   const handleCardClick = (noteId: string) => {
     setSelectedCardId(noteId);
@@ -123,6 +125,17 @@ export default function RevisePage() {
           </p>
         </div>
       </header>
+
+      {/* Offline Mode Indicator Bar */}
+      {!isOnline && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          className="mb-6 bg-emerald-50 border border-emerald-100 rounded-[1.25rem] p-3.5 text-emerald-800 text-[10px] font-black flex items-center justify-center text-center leading-normal shadow-sm"
+        >
+          ✓ Saved Notes Available • ✓ Flashcards Available • ✓ Revision History Available (Offline Mode)
+        </motion.div>
+      )}
 
       {/* ==========================================
           MAIN LIST VIEW

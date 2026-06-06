@@ -63,7 +63,7 @@ export async function getUserProfile(firebaseUid: string, isGuest: boolean = fal
       },
       learningStats: {
         revisionStreak: "12 Days",
-        streakSubtitle: "Top 5% of class",
+        streakSubtitle: "",
         placementPercent: "85%",
         placementTrack: "SDE Track",
         confidenceAvg: "4.2 / 5.0",
