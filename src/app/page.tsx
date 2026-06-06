@@ -1,6 +1,6 @@
 "use client";
 
-import { Flame, Target, Zap, Brain, Camera, BookOpen, Sparkles, MoreHorizontal, User, Settings, LogOut, Folder, Download } from "lucide-react";
+import { Flame, Target, Zap, Brain, Camera, BookOpen, Sparkles, MoreHorizontal, User, Settings, LogOut, Folder, Download, Play, Square, Headphones, Music } from "lucide-react";
 import StatCard from "@/components/home/StatCard";
 import QuickAction from "@/components/home/QuickAction";
 import Heatmap from "@/components/home/Heatmap";
@@ -20,6 +20,33 @@ export default function LearnHome() {
   const [user, setUser] = useState<any>(null);
   const [noteFolders, setNoteFolders] = useState<Record<string, number>>({});
   const [usedRevision, setUsedRevision] = useState(false);
+  
+  // Notesify Audio State
+  const [playingTrackId, setPlayingTrackId] = useState<string | null>(null);
+
+  const playNotesify = (id: string, text: string) => {
+    if (playingTrackId === id) {
+      window.speechSynthesis.cancel();
+      setPlayingTrackId(null);
+      return;
+    }
+    
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.95;
+    
+    const voices = window.speechSynthesis.getVoices();
+    const goodVoice = voices.find(v => v.name.includes("Google") || v.lang.includes("en-US") || v.lang.includes("en-GB"));
+    if (goodVoice) utterance.voice = goodVoice;
+
+    utterance.onend = () => setPlayingTrackId(null);
+    setPlayingTrackId(id);
+    window.speechSynthesis.speak(utterance);
+  };
+
+  useEffect(() => {
+    return () => window.speechSynthesis.cancel();
+  }, []);
 
   useEffect(() => {
     try {
@@ -239,6 +266,57 @@ export default function LearnHome() {
           </div>
         </section>
       )}
+
+      {/* Notesify: Spotify for Notes */}
+      <section className="mt-8">
+        <div className="flex items-center gap-2 mb-4 px-1">
+          <Headphones className="w-5 h-5 text-indigo-500" />
+          <h2 className="text-lg font-black tracking-tight text-slate-900">Notesify <span className="text-[10px] font-bold bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-md align-middle ml-1 uppercase">Beta</span></h2>
+        </div>
+        
+        <div className="bg-slate-900 rounded-[2rem] p-5 shadow-xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 blur-[40px] rounded-full pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-emerald-500/10 blur-[40px] rounded-full pointer-events-none" />
+          
+          <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4">Your Daily Audio Mixes</h3>
+          
+          <div className="space-y-3 relative z-10">
+            {/* Track 1 */}
+            <div 
+              onClick={() => playNotesify("track-1", "Welcome to Notesify. Your daily mix for Operating Systems. Today's topics include CPU Scheduling algorithms: First Come First Served, Shortest Job First, and Round Robin. These algorithms dictate how the CPU allocates time to various processes.")}
+              className={`flex items-center gap-4 p-3 rounded-2xl cursor-pointer transition-colors border ${playingTrackId === "track-1" ? "bg-indigo-500/20 border-indigo-500/30" : "bg-white/5 border-transparent hover:bg-white/10"}`}
+            >
+              <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center shrink-0 shadow-lg">
+                <Music className="w-6 h-6 text-white opacity-80" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className={`text-sm font-bold truncate ${playingTrackId === "track-1" ? "text-indigo-400" : "text-white"}`}>Operating Systems Mix</h4>
+                <p className="text-[11px] text-slate-400 font-medium mt-0.5 truncate">CPU Scheduling, FCFS, SJF...</p>
+              </div>
+              <button className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${playingTrackId === "track-1" ? "bg-indigo-500" : "bg-white/10"}`}>
+                {playingTrackId === "track-1" ? <Square className="w-4 h-4 fill-white text-white" /> : <Play className="w-4 h-4 fill-white text-white ml-0.5" />}
+              </button>
+            </div>
+
+            {/* Track 2 */}
+            <div 
+              onClick={() => playNotesify("track-2", "Your daily mix for Database Management Systems. We are focusing on Database Normalization today. Normalization minimizes redundancy and dependency by organizing fields and table of a database. Key concepts include First, Second, and Third Normal Forms.")}
+              className={`flex items-center gap-4 p-3 rounded-2xl cursor-pointer transition-colors border ${playingTrackId === "track-2" ? "bg-emerald-500/20 border-emerald-500/30" : "bg-white/5 border-transparent hover:bg-white/10"}`}
+            >
+              <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center shrink-0 shadow-lg">
+                <Brain className="w-6 h-6 text-white opacity-80" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className={`text-sm font-bold truncate ${playingTrackId === "track-2" ? "text-emerald-400" : "text-white"}`}>DBMS: Normalization</h4>
+                <p className="text-[11px] text-slate-400 font-medium mt-0.5 truncate">1NF, 2NF, 3NF, BCNF...</p>
+              </div>
+              <button className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${playingTrackId === "track-2" ? "bg-emerald-500" : "bg-white/10"}`}>
+                {playingTrackId === "track-2" ? <Square className="w-4 h-4 fill-white text-white" /> : <Play className="w-4 h-4 fill-white text-white ml-0.5" />}
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
 
 
       {/* Activity Heatmap */}

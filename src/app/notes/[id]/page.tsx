@@ -3,7 +3,7 @@
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, Share, Bookmark, BrainCircuit, Sparkles, HelpCircle, Check, RotateCw } from "lucide-react";
+import { ChevronLeft, Share, Bookmark, BrainCircuit, Sparkles, HelpCircle, Check, RotateCw, Play, Square, Headphones } from "lucide-react";
 import Link from "next/link";
 import { runInterviewPrepCheck, InterviewQuestion } from "@/lib/prepCheck";
 
@@ -21,6 +21,32 @@ export default function NotesPage({ params }: { params: Promise<{ id: string }> 
   const [notesText, setNotesText] = useState("");
   const [dateStr, setDateStr] = useState("Today, 10:30 AM");
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const playPodcast = () => {
+    if (isPlaying) {
+      window.speechSynthesis.cancel();
+      setIsPlaying(false);
+      return;
+    }
+
+    const textToSpeak = `Welcome to your Insta-Tutor session. Today's topic is ${title} for ${subject}. Here is the summary: ${notesText}. Good luck with your preparation!`;
+    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+    utterance.rate = 0.95;
+    
+    const voices = window.speechSynthesis.getVoices();
+    const goodVoice = voices.find(v => v.name.includes("Google") || v.lang.includes("en-US") || v.lang.includes("en-GB"));
+    if (goodVoice) utterance.voice = goodVoice;
+
+    utterance.onend = () => setIsPlaying(false);
+    
+    setIsPlaying(true);
+    window.speechSynthesis.speak(utterance);
+  };
+
+  useEffect(() => {
+    return () => window.speechSynthesis.cancel();
+  }, []);
 
   // Simulated live analysis states
   const [isAnalyzing, setIsAnalyzing] = useState(true);
@@ -111,6 +137,45 @@ We also discussed process states (ready, running, and waiting).`);
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">{title}</h1>
           <p className="text-sm font-medium text-slate-500 mt-1">{subject} • {dateStr}</p>
+        </div>
+
+        {/* AI Podcast Magic Button */}
+        <div className="mt-5 relative group">
+          {isPlaying && (
+            <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-500 animate-pulse"></div>
+          )}
+          <button 
+            onClick={playPodcast} 
+            className="relative w-full bg-slate-900 text-white rounded-2xl p-4 font-bold flex items-center justify-between shadow-xl active:scale-95 transition-all overflow-hidden border border-slate-800"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div className="flex items-center gap-4 relative z-10">
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${isPlaying ? 'bg-rose-500' : 'bg-indigo-500'}`}>
+                {isPlaying ? <Square className="w-5 h-5 fill-white text-white" /> : <Play className="w-5 h-5 fill-white text-white ml-1" />}
+              </div>
+              <div className="text-left">
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <h3 className="text-[15px] font-black tracking-tight text-white">Insta-Tutor Podcast</h3>
+                  <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                </div>
+                <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">
+                  {isPlaying ? "Playing AI Summary..." : "Listen to 2-Min Audio"}
+                </p>
+              </div>
+            </div>
+            
+            <div className="relative z-10 flex items-center justify-center w-10 h-10">
+              {isPlaying ? (
+                <div className="flex gap-1 items-end h-5">
+                  <motion.div animate={{ height: ["40%", "100%", "40%"] }} transition={{ repeat: Infinity, duration: 0.8 }} className="w-1.5 bg-indigo-400 rounded-full"></motion.div>
+                  <motion.div animate={{ height: ["60%", "30%", "100%", "60%"] }} transition={{ repeat: Infinity, duration: 1.1 }} className="w-1.5 bg-purple-400 rounded-full"></motion.div>
+                  <motion.div animate={{ height: ["100%", "50%", "100%"] }} transition={{ repeat: Infinity, duration: 0.9 }} className="w-1.5 bg-rose-400 rounded-full"></motion.div>
+                </div>
+              ) : (
+                <Headphones className="w-6 h-6 text-slate-600" />
+              )}
+            </div>
+          </button>
         </div>
         
         {/* Tabs */}
