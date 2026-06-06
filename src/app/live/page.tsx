@@ -213,10 +213,15 @@ export default function LiveHome() {
           </div>
         </header>
 
-        {/* Main Module Cards */}
-        <section className="flex flex-col gap-4">
-          
-          {/* Library Card */}
+
+        {/* 1. Library Hub (Hero Card) */}
+        <section className="flex flex-col gap-3">
+          <div className="flex items-center gap-2 px-1">
+            <BookOpen className="w-4 h-4 text-slate-500" />
+            <h2 className="text-[11px] font-black text-slate-500 uppercase tracking-widest">
+              Library Hub
+            </h2>
+          </div>
           <motion.div
             whileHover={{ scale: 1.01, y: -2 }}
             whileTap={{ scale: 0.98 }}
@@ -235,66 +240,18 @@ export default function LiveHome() {
             <div className="mt-4 z-10 relative">
               <h2 className="text-xl font-bold tracking-tight">Central Library</h2>
               <p className="text-xs font-semibold text-slate-300 mt-1 leading-normal flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" /> 92% Full
-              </p>
-            </div>
-          </motion.div>
-
-          {/* Mess Menu Card */}
-          <motion.div
-            whileHover={{ scale: 1.01, y: -2 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setActiveModal("mess")}
-            className="bg-gradient-to-br from-slate-900 to-slate-950 text-white rounded-3xl p-6 shadow-md shadow-slate-950/15 border border-slate-800 relative overflow-hidden flex flex-col justify-between min-h-[140px] cursor-pointer group"
-          >
-            <div className="absolute -top-16 -right-16 w-40 h-40 bg-orange-500/15 blur-2xl rounded-full" />
-            <div className="flex justify-between items-start z-10 relative">
-              <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center border border-white/20">
-                <Utensils className="w-5 h-5 text-orange-400" />
-              </div>
-              <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center border border-white/20 group-hover:bg-white/20 transition-colors">
-                <ArrowRight className="w-4 h-4 text-white" />
-              </div>
-            </div>
-            <div className="mt-4 z-10 relative">
-              <h2 className="text-xl font-bold tracking-tight">Mess Menu</h2>
-              <p className="text-xs font-semibold text-slate-300 mt-1 leading-normal">
-                Check today's breakfast, lunch, and dinner.
-              </p>
-            </div>
-          </motion.div>
-
-          {/* Timetable Card */}
-          <motion.div
-            whileHover={{ scale: 1.01, y: -2 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setActiveModal("timetable")}
-            className="bg-gradient-to-br from-indigo-600 to-indigo-700 text-white rounded-3xl p-6 shadow-md shadow-indigo-600/10 border border-indigo-500/25 relative overflow-hidden flex flex-col justify-between min-h-[140px] cursor-pointer group"
-          >
-            <div className="absolute -top-16 -right-16 w-40 h-40 bg-white/10 blur-2xl rounded-full" />
-            <div className="flex justify-between items-start z-10 relative">
-              <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center border border-white/20">
-                <Calendar className="w-5 h-5 text-indigo-100" />
-              </div>
-              <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center border border-white/20 group-hover:bg-white/20 transition-colors">
-                <ArrowRight className="w-4 h-4 text-white" />
-              </div>
-            </div>
-            <div className="mt-4 z-10 relative">
-              <h2 className="text-xl font-bold tracking-tight">Class Timetable</h2>
-              <p className="text-xs font-semibold text-indigo-100 mt-1 leading-normal">
-                View your slot-wise academic schedule.
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" /> 142 Seats Available (8% Free)
               </p>
             </div>
           </motion.div>
         </section>
 
-        {/* Announcements Feed */}
-        <section className="mt-4">
-          <div className="flex items-center gap-2 mb-4 px-1">
+        {/* 2. Announcements Feed (Immediately below Library) */}
+        <section>
+          <div className="flex items-center gap-2 mb-3 px-1">
             <Megaphone className="w-4 h-4 text-slate-500" />
             <h2 className="text-[11px] font-black text-slate-500 uppercase tracking-widest">
-              Announcements
+              Recent Announcements
             </h2>
           </div>
           
@@ -325,6 +282,60 @@ export default function LiveHome() {
                 {idx < announcements.length - 1 && <div className="h-px bg-slate-100 mx-4" />}
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* 3 & 4. Timetable & Mess Menu (Grid Layout, non-giant cards) */}
+        <section className="space-y-3">
+          <div className="flex items-center gap-2 px-1">
+            <Calendar className="w-4 h-4 text-slate-500" />
+            <h2 className="text-[11px] font-black text-slate-500 uppercase tracking-widest">
+              Schedules & Menus
+            </h2>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            {/* Timetable Card */}
+            <motion.div
+              whileHover={{ scale: 1.01, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setActiveModal("timetable")}
+              className="bg-white border border-slate-200/80 p-5 rounded-[2rem] hover:border-indigo-400 transition-all cursor-pointer shadow-sm group flex flex-col justify-between min-h-[140px]"
+            >
+              <div className="flex justify-between items-start w-full">
+                <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center border border-indigo-100/50">
+                  <Calendar className="w-4 h-4 text-indigo-600" />
+                </div>
+                <div className="w-6 h-6 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 group-hover:bg-indigo-50 group-hover:border-indigo-100/50 transition-colors">
+                  <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-indigo-650" />
+                </div>
+              </div>
+              <div>
+                <h3 className="font-bold text-slate-800 text-sm group-hover:text-indigo-600 transition-colors">Timetable</h3>
+                <p className="text-[10px] font-bold text-slate-400 mt-1 block">Slot-wise schedule</p>
+              </div>
+            </motion.div>
+
+            {/* Mess Menu Card */}
+            <motion.div
+              whileHover={{ scale: 1.01, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setActiveModal("mess")}
+              className="bg-white border border-slate-200/80 p-5 rounded-[2rem] hover:border-amber-400 transition-all cursor-pointer shadow-sm group flex flex-col justify-between min-h-[140px]"
+            >
+              <div className="flex justify-between items-start w-full">
+                <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center border border-amber-100/50">
+                  <Utensils className="w-4 h-4 text-amber-600" />
+                </div>
+                <div className="w-6 h-6 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 group-hover:bg-amber-50 group-hover:border-amber-100/50 transition-colors">
+                  <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-amber-600" />
+                </div>
+              </div>
+              <div>
+                <h3 className="font-bold text-slate-800 text-sm group-hover:text-amber-600 transition-colors">Mess Menu</h3>
+                <p className="text-[10px] font-bold text-slate-400 mt-1 block">Check daily meals</p>
+              </div>
+            </motion.div>
           </div>
         </section>
       </div>
@@ -539,45 +550,67 @@ export default function LiveHome() {
       {/* Announcement Details Drawer */}
       <AnimatePresence>
         {activeModal === "announcement" && selectedAnnouncement && (
-          <motion.div 
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed inset-x-0 bottom-0 h-[85vh] bg-white rounded-t-3xl z-50 flex flex-col shadow-[0_-20px_40px_rgba(0,0,0,0.2)]"
-          >
-            <div className="flex justify-center pt-3 pb-2 cursor-pointer" onClick={() => setActiveModal("none")}>
-              <div className="w-12 h-1.5 bg-slate-200 rounded-full" />
-            </div>
-            
-            <div className="flex-1 overflow-y-auto px-6 py-6 pb-24">
-              <div className="w-16 h-16 rounded-3xl bg-slate-50 border border-slate-100 flex items-center justify-center mb-6 shadow-sm">
-                {selectedAnnouncement.icon}
+          <>
+            {/* Backdrop Overlay */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] max-w-md mx-auto"
+              onClick={() => setActiveModal("none")}
+            />
+
+            {/* Drawer */}
+            <motion.div 
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed inset-x-0 bottom-0 h-[85vh] bg-white rounded-t-3xl z-[100] flex flex-col shadow-[0_-20px_40px_rgba(0,0,0,0.2)] max-w-md mx-auto"
+            >
+              {/* Drag Handle & Top-Right Close Button Header */}
+              <div className="flex justify-between items-center px-6 pt-5 pb-3 border-b border-slate-100 shrink-0 relative">
+                <div className="w-12 h-1.5 bg-slate-200 rounded-full absolute left-1/2 -translate-x-1/2 top-3" />
+                <div>
+                  <h3 className="text-xs font-bold text-[#5B3DF5] tracking-widest uppercase">Notice Details</h3>
+                </div>
+                <button 
+                  onClick={() => setActiveModal("none")} 
+                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors pointer-events-auto cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
               
-              <div className="mb-6">
-                <span className={`text-[10px] font-bold px-2.5 py-1 rounded-md mb-4 inline-block ${selectedAnnouncement.tagColor}`}>
-                  {selectedAnnouncement.category}
-                </span>
-                <h2 className="text-2xl font-black text-slate-900 leading-tight mb-2">{selectedAnnouncement.title}</h2>
-                <p className="text-sm font-bold text-slate-400">{selectedAnnouncement.date}</p>
+              <div className="flex-1 overflow-y-auto px-6 py-6 pb-24">
+                <div className="w-16 h-16 rounded-3xl bg-slate-50 border border-slate-100 flex items-center justify-center mb-6 shadow-sm">
+                  {selectedAnnouncement.icon}
+                </div>
+                
+                <div className="mb-6">
+                  <span className={`text-[10px] font-bold px-2.5 py-1 rounded-md mb-4 inline-block ${selectedAnnouncement.tagColor}`}>
+                    {selectedAnnouncement.category}
+                  </span>
+                  <h2 className="text-2xl font-black text-slate-900 leading-tight mb-2">{selectedAnnouncement.title}</h2>
+                  <p className="text-sm font-bold text-slate-400">{selectedAnnouncement.date}</p>
+                </div>
+                
+                <div className="prose prose-slate prose-sm text-slate-600 leading-relaxed">
+                  <p className="text-base font-medium text-slate-800 mb-4">{selectedAnnouncement.summary}</p>
+                  <p>{selectedAnnouncement.content}</p>
+                </div>
               </div>
               
-              <div className="prose prose-slate prose-sm text-slate-600 leading-relaxed">
-                <p className="text-base font-medium text-slate-800 mb-4">{selectedAnnouncement.summary}</p>
-                <p>{selectedAnnouncement.content}</p>
+              <div className="p-4 border-t border-slate-100 bg-white shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)] z-10 pb-safe">
+                <button 
+                  onClick={() => setActiveModal("none")}
+                  className="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl active:scale-95 transition-transform text-lg cursor-pointer"
+                >
+                  Close
+                </button>
               </div>
-            </div>
-            
-            <div className="p-4 border-t border-slate-100 bg-white shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)] z-10">
-              <button 
-                onClick={() => setActiveModal("none")}
-                className="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl active:scale-95 transition-transform text-lg"
-              >
-                Close
-              </button>
-            </div>
-          </motion.div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 

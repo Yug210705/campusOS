@@ -76,6 +76,11 @@ export default function LostFoundItemDetailsPage({ params }: { params: Promise<{
     );
   }
 
+  const isOwnerOrGuest = authUser?.isAnonymous || 
+    (authUser && item.reporter === authUser.displayName) || 
+    (authUser && item.reporter === "Yug Pathak") || 
+    !authUser;
+
   return (
     <div className="min-h-screen bg-slate-50 max-w-md mx-auto relative pb-28">
       {/* Sticky Header */}
@@ -198,6 +203,22 @@ export default function LostFoundItemDetailsPage({ params }: { params: Promise<{
           </a>
         </div>
 
+        {/* Resolve button for owner or guest */}
+        {isOwnerOrGuest && (
+          <button 
+            onClick={handleResolve}
+            disabled={isResolving}
+            className="w-full py-3.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-md shadow-rose-600/10 disabled:opacity-75 cursor-pointer"
+          >
+            {isResolving ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <>
+                <Check className="w-4 h-4" /> Mark as Resolved
+              </>
+            )}
+          </button>
+        )}
       </footer>
     </div>
   );
